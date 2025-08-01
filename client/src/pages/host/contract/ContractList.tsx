@@ -1,7 +1,7 @@
 // 📁 src/pages/host/ContractList.tsx
 // TRANG DANH SÁCH HỢP ĐỒNG
 import { useEffect, useState } from "react";
-import { hostService } from "../../services/hostService";
+import { hostService } from "../../../services/hostService";
 import { useNavigate } from "react-router-dom";
 import { FileText, Search, Eye, Trash2 } from "lucide-react";
 

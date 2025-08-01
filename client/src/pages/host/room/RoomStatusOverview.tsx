@@ -1,7 +1,7 @@
 // 📁 src/pages/host/RoomStatus.tsx
 // Quản lý trạng thái phòng
 import { useEffect, useState } from "react";
-import { hostService } from "../../services/hostService";
+import { hostService } from "../../../services/hostService";
 import { CheckCircle, AlertCircle, Clock } from "lucide-react";
 
 interface RoomStatus {

@@ -2,7 +2,7 @@
 // Trang cập nhật thông tin cá nhân của chủ nhà
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { hostService } from "../../services/hostService";
+import { hostService } from "../../../services/hostService";
 
 interface UpdateProfileProps {
   closeModal?: () => void;

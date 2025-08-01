@@ -2,8 +2,8 @@
 // TRANG DUYỆT YÊU CẦU THUÊ PHÒNG
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { hostService } from "../../services/hostService";
-import RentalRequestCard from "../../components/RentalRequestCard";
+import { hostService } from "../../../services/hostService";
+import RentalRequestCard from "../../../components/RentalRequestCard";
 import { Users, Filter } from "lucide-react";
 
 interface RentalRequest {

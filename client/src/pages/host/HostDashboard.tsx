@@ -7,8 +7,8 @@ import StatCard from "../../components/StatCard";
 import RoomCard from "../../components/RoomCard";
 import RentalRequestCard from "../../components/RentalRequestCard";
 import TenantCard from "../../components/TenantCard";
-import RoomDetail from "./RoomDetail";
-import TenantDetail from "./TenantDetail";
+import RoomDetail from "./room/RoomDetail";
+import TenantDetail from "./tenant/TenantDetail";
 import { Home, CheckCircle, Users, DollarSign, Plus, Eye, UserCheck } from "lucide-react";
 
 interface Room {

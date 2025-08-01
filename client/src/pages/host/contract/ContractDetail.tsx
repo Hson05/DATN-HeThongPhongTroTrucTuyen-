@@ -2,7 +2,7 @@
 // Trang xem chi tiết hợp đồng thuê phòng
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { hostService } from "../../services/hostService";
+import { hostService } from "../../../services/hostService";
 import { FileText, Download, ArrowLeft } from "lucide-react";
 
 const ContractDetail = () => {

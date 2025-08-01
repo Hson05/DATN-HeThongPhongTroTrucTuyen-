@@ -2,8 +2,8 @@
 // Danh sách phòng trọ
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { hostService } from "../../services/hostService";
-import RoomCard from "../../components/RoomCard";
+import { hostService } from "../../../services/hostService";
+import RoomCard from "../../../components/RoomCard";
 import RoomDetail from "./RoomDetail";
 import { Plus, Search, Filter } from "lucide-react";
 

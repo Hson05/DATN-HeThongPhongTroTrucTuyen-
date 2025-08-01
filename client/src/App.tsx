@@ -1,19 +1,19 @@
 // client/src/App.tsx
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import Dashboard from "./pages/host/Dashboard";
-import Profile from "./pages/host/Profile";
-import UpdateProfile from "./pages/host/UpdateProfile";
-import CreateRoom from "./pages/host/CreateRoom";
-import UpdateRoom from "./pages/host/UpdateRoom";
-import CreateContract from "./pages/host/CreateContract";
-import ContractDetail from "./pages/host/ContractDetail";
-import RoomStatus from "./pages/host/RoomStatus";
-import RentalRequest from "./pages/host/RentalRequest";
-import ContractList from "./pages/host/ContractList";
-import RoomList from "./pages/host/RoomList";
-import TenantList from "./pages/host/TenantList";
+import Dashboard from "./pages/host/HostDashboard";
+import Profile from "./pages/host/profile/HostProfile";
+import UpdateProfile from "./pages/host/profile/HostProfileEdit";
+import CreateRoom from "./pages/host/room/RoomCreate";
+import UpdateRoom from "./pages/host/room/RoomEdit";
+import CreateContract from "./pages/host/contract/ContractCreate";
+import ContractDetail from "./pages/host/contract/ContractDetail";
+import RoomStatus from "./pages/host/room/RoomStatusOverview";
+import RentalRequest from "./pages/host/booking/BookingRequestList";
+import ContractList from "./pages/host/contract/ContractList";
+import RoomList from "./pages/host/room/RoomList";
+import TenantList from "./pages/host/tenant/TenantList";
 import HomepageLayout from "./components/HomePageLayout";
-import TenantEdit from "./pages/host/TenantEdit";
+import TenantEdit from "./pages/host/tenant/TenantEdit";
 
 function App() {
   return (

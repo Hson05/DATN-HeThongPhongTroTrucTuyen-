@@ -2,7 +2,7 @@
 // ../client/src/pages/host/UpdateRoom.tsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { hostService } from "../../services/hostService";
+import { hostService } from "../../../services/hostService";
 
 export default function UpdateRoom() {
   const { id } = useParams<{ id: string }>();

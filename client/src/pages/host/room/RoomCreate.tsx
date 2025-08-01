@@ -2,7 +2,7 @@
 // ../client/src/pages/host/CreateRoom.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { hostService } from "../../services/hostService";
+import { hostService } from "../../../services/hostService";
 
 export default function CreateRoom() {
   const navigate = useNavigate();

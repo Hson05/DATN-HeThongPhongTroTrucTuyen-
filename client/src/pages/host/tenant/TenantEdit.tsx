@@ -2,7 +2,7 @@
 // Trang chỉnh sửa thông tin người thuê
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { hostService } from "../../services/hostService";
+import { hostService } from "../../../services/hostService";
 
 const TenantEdit = () => {
   const { id } = useParams<{ id: string }>();

@@ -1,7 +1,7 @@
 // src/pages/host/TenantDetail.tsx
 // Trang chi tiết người thuê
 import { X, User, Phone, Mail, Home, Calendar, FileText, DollarSign } from "lucide-react";
-import { hostService } from "../../services/hostService";
+import { hostService } from "../../../services/hostService";
 
 interface Props {
   tenant: any;

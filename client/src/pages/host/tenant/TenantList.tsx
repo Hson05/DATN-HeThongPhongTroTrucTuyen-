@@ -1,11 +1,11 @@
 // src/pages/host/TenantList.tsx
 // Trang danh sách người thuê hiện tại
 import { useEffect, useState } from "react";
-import { hostService } from "../../services/hostService";
+import { hostService } from "../../../services/hostService";
 import { useNavigate } from "react-router-dom";
-import TenantCard from "../../components/TenantCard";
+import TenantCard from "../../../components/TenantCard";
 import TenantDetail from "./TenantDetail";
-import Modal from "../../components/Modal";
+import Modal from "../../../components/Modal";
 import { Users, Search, Filter, UserX, AlertTriangle } from "lucide-react";
 
 interface Tenant {

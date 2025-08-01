@@ -2,7 +2,7 @@
 // TRANG TẠO HỢP ĐỒNG MỚI
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { hostService } from "../../services/hostService";
+import { hostService } from "../../../services/hostService";
 
 const CreateContract = () => {
   const navigate = useNavigate();

@@ -1,9 +1,9 @@
 // 📁 src/pages/host/Profile.tsx
 import { useEffect, useState } from "react";
-import { hostService } from "../../services/hostService";
+import { hostService } from "../../../services/hostService";
 import { User, Phone, Mail, MapPin, Edit } from "lucide-react";
-import Modal from "../../components/Modal"; // Modal tự tạo
-import UpdateProfile from "./UpdateProfile"; // Form cập nhật thông tin
+import Modal from "../../../components/Modal"; // Modal tự tạo
+import UpdateProfile from "./HostProfileEdit"; // Form cập nhật thông tin
 
 const Profile = () => {
   const [profile, setProfile] = useState({
