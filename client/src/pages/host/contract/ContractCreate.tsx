@@ -1,6 +1,6 @@
-// 📁 src/pages/host/CreateContract.tsx
+// 📁 src/pages/host/contract/CreateContract.tsx
 // TRANG TẠO HỢP ĐỒNG MỚI
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { hostService } from "../../../services/hostService";
 
@@ -9,45 +9,67 @@ const CreateContract = () => {
   const location = useLocation();
   const [contract, setContract] = useState({
     roomId: location.state?.roomId || "",
-    tenantId: location.state?.tenantId || "",
+    tenantId: location.state?.tenantName || "",
     contractDate: "",
     duration: 12,
-    rentPrice: "",
+    rentPrice: 0, // sửa thành number
     terms: "",
   });
   const [loading, setLoading] = useState(false);
-  const [assignTenant, setAssignTenant] = useState(true); // Checkbox để gắn người thuê
+  const [roomInfo, setRoomInfo] = useState<any>(null);
+  const [autoAssignTenant, setAutoAssignTenant] = useState(true);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  useEffect(() => {
+    // Lấy thông tin phòng để hiển thị và set giá thuê mặc định
+    if (contract.roomId) {
+      fetchRoomInfo();
+    }
+  }, [contract.roomId]);
+
+  const fetchRoomInfo = async () => {
+    try {
+      const res = await hostService.getRoomById(contract.roomId);
+      setRoomInfo(res.data);
+      setContract(prev => ({
+        ...prev,
+        rentPrice: Number(res.data.price) || 0 // ép kiểu number
+      }));
+    } catch (error) {
+      console.error("Error fetching room info:", error);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setContract((prev) => ({ ...prev, [name]: value }));
+    setContract((prev) => ({
+      ...prev,
+      [name]: name === "duration" || name === "rentPrice" ? Number(value) : value
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    // Tạo id duy nhất cho hợp đồng (có thể dùng Date.now hoặc uuid)
-    const newId = `C${Date.now()}`;
-
-    const dataToSubmit = {
-      ...contract,
-      id: newId, // Thêm dòng này
-      contractId: newId, // Nếu muốn đồng bộ contractId với id
-      duration: Number(contract.duration),
-      rentPrice: Number(contract.rentPrice),
-      contractDate: contract.contractDate,
-    };
-
     try {
-      if (assignTenant && location.state?.requestId) {
-        await hostService.approveRentalRequestWithAssignment(
-          location.state.requestId.toString(),
-          dataToSubmit
+      if (autoAssignTenant && location.state?.requestId) {
+        // Tạo hợp đồng và gắn người thuê từ yêu cầu
+        await hostService.approveRentalRequestWithContract(
+          location.state.requestId,
+          contract
         );
         alert("✅ Tạo hợp đồng và gắn người thuê thành công!");
       } else {
-        await hostService.createContract(dataToSubmit);
+        // Chỉ tạo hợp đồng
+        const contractId = `C${Date.now()}`;
+        await hostService.createContract({
+          ...contract,
+          contractId,
+          tenantName: location.state?.tenantName || "",
+          phone: location.state?.phone || "",
+          email: location.state?.email || "",
+          status: "active"
+        });
         alert("✅ Tạo hợp đồng thành công!");
       }
       navigate("/host/contracts");
@@ -66,6 +88,32 @@ const CreateContract = () => {
           📝 Tạo Hợp Đồng Mới
         </h1>
         
+        {/* Thông tin từ yêu cầu thuê */}
+        {location.state && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <h3 className="font-semibold text-blue-900 mb-2">Thông tin từ yêu cầu thuê:</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <p><strong>Người thuê:</strong> {location.state.tenantName}</p>
+              <p><strong>Số điện thoại:</strong> {location.state.phone}</p>
+              <p><strong>Email:</strong> {location.state.email}</p>
+              <p><strong>Phòng mong muốn:</strong> {location.state.roomId}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Thông tin phòng */}
+        {roomInfo && (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+            <h3 className="font-semibold text-gray-900 mb-2">Thông tin phòng:</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <p><strong>Mã phòng:</strong> {roomInfo.roomId}</p>
+              <p><strong>Diện tích:</strong> {roomInfo.area} m²</p>
+              <p><strong>Giá thuê:</strong> {roomInfo.price?.toLocaleString()}₫/tháng</p>
+              <p><strong>Số người tối đa:</strong> {roomInfo.maxPeople} người</p>
+            </div>
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -83,7 +131,7 @@ const CreateContract = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                👤 ID Người thuê *
+                👤 Tên người thuê *
               </label>
               <input
                 name="tenantId"
@@ -112,20 +160,22 @@ const CreateContract = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 🕒 Thời hạn hợp đồng (tháng) *
               </label>
-              <input
+              <select
                 name="duration"
-                type="number"
                 value={contract.duration}
                 onChange={handleChange}
                 required
-                min={1}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+              >
+                <option value={6}>6 tháng</option>
+                <option value={12}>12 tháng</option>
+                <option value={24}>24 tháng</option>
+              </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                💰 Giá thuê (VNĐ) *
+                💰 Giá thuê (VNĐ/tháng) *
               </label>
               <input
                 name="rentPrice"
@@ -143,14 +193,14 @@ const CreateContract = () => {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex items-center">
                 <input
-                  id="assignTenant"
+                  id="autoAssignTenant"
                   type="checkbox"
-                  checked={assignTenant}
-                  onChange={(e) => setAssignTenant(e.target.checked)}
+                  checked={autoAssignTenant}
+                  onChange={(e) => setAutoAssignTenant(e.target.checked)}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
-                <label htmlFor="assignTenant" className="ml-2 block text-sm text-blue-800">
-                  🏠 Gắn người thuê vào phòng ngay sau khi tạo hợp đồng
+                <label htmlFor="autoAssignTenant" className="ml-2 block text-sm text-blue-800">
+                  🏠 Tự động gắn người thuê vào phòng sau khi tạo hợp đồng
                 </label>
               </div>
               <p className="text-xs text-blue-600 mt-1">
@@ -169,7 +219,7 @@ const CreateContract = () => {
               onChange={handleChange}
               rows={6}
               required
-              placeholder="Nhập các điều khoản và quy định của hợp đồng..."
+              placeholder="Nhập các điều khoản và quy định của hợp đồng...&#10;Ví dụ:&#10;- Người thuê có trách nhiệm bảo vệ tài sản phòng trọ&#10;- Thanh toán tiền thuê trước ngày 5 hàng tháng&#10;- Không được nuôi thú cưng trong phòng&#10;- Giữ gìn vệ sinh chung và trật tự khu vực"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>

@@ -1,4 +1,4 @@
-// 📁 src/pages/host/RoomStatus.tsx
+// 📁 src/pages/host/room/RoomStatus.tsx
 // Quản lý trạng thái phòng
 import { useEffect, useState } from "react";
 import { hostService } from "../../../services/hostService";
@@ -6,6 +6,7 @@ import { CheckCircle, AlertCircle, Clock } from "lucide-react";
 
 interface RoomStatus {
   id: number;
+  roomId: string;
   name: string;
   status: string;
 }
@@ -30,16 +31,24 @@ const RoomStatus = () => {
     fetchRooms();
   }, []);
 
-  const handleStatusChange = async (roomId: number, newStatus: string) => {
+  const handleStatusChange = async (roomId: string, newStatus: string) => {
     try {
-      await hostService.updateRoomStatus(roomId.toString(), newStatus);
+      // Tìm room status bằng roomId
+      const statusItem = roomStatus.find(item => item.roomId === roomId);
+      if (!statusItem) {
+        alert("Không tìm thấy trạng thái phòng!");
+        return;
+      }
+
+      await hostService.updateRoomStatus(statusItem.id.toString(), newStatus);
       setRoomStatus((prev) =>
         prev.map((room) =>
-          room.id === roomId ? { ...room, status: newStatus } : room
+          room.roomId === roomId ? { ...room, status: newStatus } : room
         )
       );
+      alert("✅ Cập nhật trạng thái thành công!");
     } catch (error) {
-      alert("Cập nhật thất bại!");
+      alert("❌ Cập nhật thất bại!");
       console.error(error);
     }
   };
@@ -48,7 +57,6 @@ const RoomStatus = () => {
     switch (status) {
       case "Đã cho thuê":
         return <CheckCircle className="w-5 h-5 text-green-600" />;
-      case "Còn trống":
       case "Trống":
         return <Clock className="w-5 h-5 text-yellow-600" />;
       case "Đang sửa chữa":
@@ -62,7 +70,6 @@ const RoomStatus = () => {
     switch (status) {
       case "Đã cho thuê":
         return "bg-green-100 text-green-800";
-      case "Còn trống":
       case "Trống":
         return "bg-yellow-100 text-yellow-800";
       case "Đang sửa chữa":
@@ -88,7 +95,7 @@ const RoomStatus = () => {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Quản lý trạng thái phòng</h1>
         <p className="text-gray-600">
-          Đánh dấu phòng đang trống, đã cho thuê hoặc đang sửa chữa
+          Cập nhật trạng thái phòng: trống, đã cho thuê hoặc đang sửa chữa
         </p>
       </div>
 
@@ -129,6 +136,9 @@ const RoomStatus = () => {
                           <div className="text-sm font-medium text-gray-900">
                             {room.name}
                           </div>
+                          <div className="text-sm text-gray-500">
+                            {room.roomId}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -141,7 +151,7 @@ const RoomStatus = () => {
                       <select
                         value={room.status}
                         onChange={(e) =>
-                          handleStatusChange(room.id, e.target.value)
+                          handleStatusChange(room.roomId, e.target.value)
                         }
                         className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >

@@ -1,5 +1,5 @@
 // Tạo phòng mới
-// ../client/src/pages/host/CreateRoom.tsx
+// ../client/src/pages/host/room/CreateRoom.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { hostService } from "../../../services/hostService";
@@ -8,17 +8,12 @@ export default function CreateRoom() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     roomId: "",
-    roomTitle: "",
-    price: 0,
     area: 0,
+    price: 0,
     location: "",
     description: "",
     images: [""],
-    roomType: "single",
-    status: "available",
     utilities: [],
-    terms: "",
-    hostId: "1", // hoặc lấy từ context đăng nhập
     maxPeople: 1,
     deposit: "",
     electricity: "",
@@ -92,20 +87,6 @@ export default function CreateRoom() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tiêu đề phòng *
-              </label>
-              <input
-                type="text"
-                name="roomTitle"
-                value={formData.roomTitle}
-                onChange={handleChange}
-                placeholder="Phòng trọ gần trường"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Giá phòng (VNĐ) *
               </label>
               <input
@@ -131,22 +112,6 @@ export default function CreateRoom() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Loại phòng *
-              </label>
-              <select
-                name="roomType"
-                value={formData.roomType}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              >
-                <option value="single">Đơn</option>
-                <option value="shared">Chung</option>
-                <option value="apartment">Căn hộ</option>
-              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -237,19 +202,6 @@ export default function CreateRoom() {
               onChange={handleChange}
               rows={4}
               placeholder="Mô tả về phòng, môi trường xung quanh..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Điều khoản thuê
-            </label>
-            <textarea
-              name="terms"
-              value={formData.terms}
-              onChange={handleChange}
-              rows={3}
-              placeholder="Quy định, điều khoản thuê phòng..."
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>

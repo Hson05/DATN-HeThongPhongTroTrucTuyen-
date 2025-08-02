@@ -5,7 +5,6 @@ import { MapPin, Users, Zap } from "lucide-react";
 interface RoomCardProps {
   room: {
     roomId: string;
-    roomTitle: string;
     area: number;
     price: number;
     utilities: string[];
@@ -16,9 +15,6 @@ interface RoomCardProps {
     deposit?: string;
     electricity?: string;
     status: string;
-    roomType?: string;
-    terms?: string;
-    hostId?: string;
     tenant?: {
       fullName?: string;
       phone?: string;
@@ -35,6 +31,7 @@ const RoomCard = ({ room, onViewDetail, onEdit, onDelete }: RoomCardProps) => {
     switch (status) {
       case "Đã cho thuê":
         return "bg-green-100 text-green-800";
+      case "Trống":
       case "Còn trống":
         return "bg-yellow-100 text-yellow-800";
       case "Đang sửa chữa":
@@ -52,12 +49,21 @@ const RoomCard = ({ room, onViewDetail, onEdit, onDelete }: RoomCardProps) => {
             ? room.images[0]
             : "https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&dpr=1"
         }
-        alt={room.roomTitle}
+        alt={`Phòng ${room.roomId}`}
         className="w-full h-40 object-cover rounded-lg mb-4"
       />
-      <h3 className="font-bold text-lg mb-2">{room.roomTitle}</h3>
-      <p className="text-gray-600 mb-1">{room.location}</p>
+      <h3 className="font-bold text-lg mb-2">Phòng {room.roomId}</h3>
+      <p className="text-gray-600 mb-1">
+        <MapPin className="w-4 h-4 inline mr-1" />
+        {room.location || "Địa chỉ chưa cập nhật"}
+      </p>
       <p className="text-gray-500 text-sm mb-2">{room.description}</p>
+      <div className="flex items-center text-gray-500 text-sm mb-2">
+        <span>{room.area}m²</span>
+        <span className="mx-2">•</span>
+        <Users className="w-4 h-4 inline mr-1" />
+        <span>{room.maxPeople} người</span>
+      </div>
       <div className="flex flex-wrap gap-2 mb-2">
         {room.utilities.map((u, idx) => (
           <span
@@ -68,6 +74,29 @@ const RoomCard = ({ room, onViewDetail, onEdit, onDelete }: RoomCardProps) => {
           </span>
         ))}
       </div>
+      
+      <div className="mb-3">
+        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(room.status)}`}>
+          {room.status}
+        </span>
+      </div>
+
+      {room.tenant && (
+        <div className="bg-gray-50 rounded-lg p-3 mb-3">
+          <div className="flex items-center space-x-2">
+            <img
+              src={room.tenant.avatar}
+              alt={room.tenant.fullName}
+              className="w-8 h-8 rounded-full object-cover"
+            />
+            <div>
+              <p className="font-medium text-sm">{room.tenant.fullName}</p>
+              <p className="text-xs text-gray-500">{room.tenant.phone}</p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="flex justify-between items-center mt-auto">
         <span className="font-semibold text-green-600">
           {room.price.toLocaleString()}₫/tháng

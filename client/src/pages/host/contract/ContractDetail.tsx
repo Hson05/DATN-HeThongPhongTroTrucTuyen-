@@ -1,4 +1,4 @@
-// 📁 src/pages/host/ContractDetail.tsx
+// 📁 src/pages/host/contract/ContractDetail.tsx
 // Trang xem chi tiết hợp đồng thuê phòng
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";

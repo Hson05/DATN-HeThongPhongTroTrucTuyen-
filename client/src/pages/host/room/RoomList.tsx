@@ -1,4 +1,4 @@
-// ../client/src/pages/host/RoomList.tsx
+// ../client/src/pages/room/host/RoomList.tsx
 // Danh sách phòng trọ
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,26 +9,20 @@ import { Plus, Search, Filter } from "lucide-react";
 
 interface Room {
   id?: number;
-  code?: string;
   roomId: string;
-  roomTitle: string;
   area: number;
   price: number;
   utilities: string[];
   maxPeople: number;
   images: string[];
-  image?: string;
   description?: string;
   location?: string;
   deposit?: string;
   electricity?: string;
   status: string;
-  roomType?: string;
-  terms?: string;
-  hostId?: string;
   tenant?: {
-    name?: string;
-    fullName?: string;
+    userId: string;
+    fullName: string;
     phone: string;
     avatar: string;
   };
@@ -46,30 +40,29 @@ export default function RoomList() {
   const fetchRooms = async () => {
     try {
       setLoading(true);
-      const res = await hostService.getRooms();
-      const roomsWithStatus = res.data.map((room: any) => ({
-        ...room,
-        roomTitle: room.roomTitle || room.roomId || `Phòng ${room.roomId}`,
-        utilities: Array.isArray(room.utilities)
-          ? room.utilities
-          : room.utilities
-          ? room.utilities.split(",").map((u: string) => u.trim())
-          : [],
-        images: Array.isArray(room.images)
-          ? room.images
-          : room.image
-          ? [room.image]
-          : [],
-        status: room.tenant ? "Đã cho thuê" : "Còn trống",
-        tenant: room.tenant
-          ? {
-              fullName: room.tenant.fullName || "",
-              phone: room.tenant.phone || "",
-              avatar: room.tenant.avatar || "",
-              name: room.tenant.name || "",
-            }
-          : undefined,
-      }));
+      const [roomsRes, statusRes] = await Promise.all([
+        hostService.getRooms(),
+        hostService.getRoomStatus()
+      ]);
+      
+      const roomsWithStatus = roomsRes.data.map((room: any) => {
+        const status = statusRes.data.find((s: any) => s.roomId === room.roomId);
+        return {
+          ...room,
+          utilities: Array.isArray(room.utilities)
+            ? room.utilities
+            : room.utilities
+            ? room.utilities.split(",").map((u: string) => u.trim())
+            : [],
+          images: Array.isArray(room.images)
+            ? room.images
+            : room.images
+            ? [room.images]
+            : [],
+          status: status ? status.status : (room.tenant ? "Đã cho thuê" : "Trống"),
+        };
+      });
+      
       setRooms(roomsWithStatus);
       setFilteredRooms(roomsWithStatus);
     } catch (error) {
@@ -91,10 +84,11 @@ export default function RoomList() {
     // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(room => {
-        const title = room.roomTitle || "";
+        const roomTitle = `Phòng ${room.roomId}`;
         const utilities = Array.isArray(room.utilities) ? room.utilities.join(", ") : "";
-        return title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-               utilities.toLowerCase().includes(searchTerm.toLowerCase());
+        return roomTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+               utilities.toLowerCase().includes(searchTerm.toLowerCase()) ||
+               room.roomId.toLowerCase().includes(searchTerm.toLowerCase());
       });
     }
 
@@ -111,11 +105,11 @@ export default function RoomList() {
     if (!confirm) return;
 
     try {
-      await hostService.deleteRoom(roomId); // roomId phải trùng với id trong db.json
+      await hostService.deleteRoom(roomId);
       fetchRooms();
       alert("✅ Đã xóa phòng thành công!");
-    } catch (err) {
-      alert("❌ Lỗi khi xóa phòng!");
+    } catch (err: any) {
+      alert(`❌ Lỗi khi xóa phòng: ${err.message || 'Lỗi không xác định'}`);
       console.error(err);
     }
   };
@@ -155,7 +149,7 @@ export default function RoomList() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
-              placeholder="Tìm kiếm theo tên phòng hoặc tiện ích..."
+              placeholder="Tìm kiếm theo mã phòng hoặc tiện ích..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -169,7 +163,7 @@ export default function RoomList() {
               className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">Tất cả trạng thái</option>
-              <option value="Còn trống">Còn trống</option>
+              <option value="Trống">Còn trống</option>
               <option value="Đã cho thuê">Đã cho thuê</option>
               <option value="Đang sửa chữa">Đang sửa chữa</option>
             </select>

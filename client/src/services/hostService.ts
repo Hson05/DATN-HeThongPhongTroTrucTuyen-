@@ -21,14 +21,14 @@ export const hostService = {
   // 2. Quản lý trạng thái phòng
   getRoomStatus: () => axios.get(`${API}/roomStatus`),
   updateRoomStatus: (roomId: string, status: string) =>
-    axios.patch(`${API}/roomStatus/${roomId}`, { status }),        
+    axios.patch(`${API}/roomStatus/${roomId}`, { status }),
 
   // 3. Duyệt yêu cầu thuê phòng
   getRentalRequests: () => axios.get(`${API}/rentalRequests`),
   approveRentalRequest: (id: string) =>
     axios.patch(`${API}/rentalRequests/${id}`, { status: "đã duyệt" }),
   rejectRentalRequest: (id: string) =>
-    axios.patch(`${API}/rentalRequests/${id}`, { status: "đã từ chối" }),
+    axios.patch(`${API}/rentalRequests/${id}`, { status: "từ chối" }),
 
   // 4. Tạo hợp đồng 
   createContract: (data: any) => axios.post(`${API}/contracts`, data),
@@ -39,24 +39,127 @@ export const hostService = {
   getContractById: (id: string) => axios.get(`${API}/contracts/${id}`),
   deleteContract: (id: string) => axios.delete(`${API}/contracts/${id}`),
 
-
   // 6. Quản lý phòng
-  createRoom: (data: any) => axios.post(`${API}/rooms`, data),
+  createRoom: async (data: any) => {
+    try {
+      // Tạo ID mới cho phòng
+      const newId = Date.now();
+      
+      // 1. Tạo phòng mới
+      const roomRes = await axios.post(`${API}/rooms`, {
+        id: newId,
+        roomId: data.roomId,
+        area: data.area,
+        price: data.price,
+        utilities: data.utilities,
+        maxPeople: data.maxPeople,
+        images: data.images,
+        description: data.description,
+        location: data.location,
+        deposit: data.deposit,
+        electricity: data.electricity,
+        tenant: null
+      });
+
+      // 2. Tạo trạng thái phòng tương ứng
+      await axios.post(`${API}/roomStatus`, {
+        id: newId,
+        roomId: data.roomId,
+        name: `Phòng ${data.roomId}`,
+        status: "Trống"
+      });
+
+      return roomRes;
+    } catch (error) {
+      console.error("❌ Lỗi tạo phòng:", error);
+      throw error;
+    }
+  },
+
   getRooms: () => axios.get(`${API}/rooms`),
-  getRoomById: (roomId: string) => axios.get(`${API}/rooms/${roomId}`),
-  updateRoom: (roomId: string, data: any) => axios.put(`${API}/rooms/${roomId}`, data),
-  deleteRoom: (id: string) => axios.delete(`${API}/rooms/${id}`),
+  getRoomById: (roomId: string) => {
+    return axios.get(`${API}/rooms`).then(res => {
+      const room = res.data.find((r: any) => r.roomId === roomId);
+      if (!room) throw new Error("Không tìm thấy phòng");
+      return { data: room };
+    });
+  },
+  
+  updateRoom: async (roomId: string, data: any) => {
+    try {
+      // 1. Tìm phòng theo roomId
+      const roomsRes = await axios.get(`${API}/rooms`);
+      const room = roomsRes.data.find((r: any) => r.roomId === roomId);
+      if (!room) throw new Error("Không tìm thấy phòng");
+
+      // 2. Cập nhật thông tin phòng
+      const roomRes = await axios.put(`${API}/rooms/${room.id}`, {
+        ...room,
+        area: data.area,
+        price: data.price,
+        utilities: data.utilities,
+        maxPeople: data.maxPeople,
+        images: data.images,
+        description: data.description,
+        location: data.location,
+        deposit: data.deposit,
+        electricity: data.electricity
+      });
+
+      // 3. Cập nhật tên trong roomStatus
+      const statusRes = await axios.get(`${API}/roomStatus`);
+      const status = statusRes.data.find((s: any) => s.roomId === roomId);
+      if (status) {
+        await axios.patch(`${API}/roomStatus/${status.id}`, {
+          name: `Phòng ${roomId}`
+        });
+      }
+
+      return roomRes;
+    } catch (error) {
+      console.error("❌ Lỗi cập nhật phòng:", error);
+      throw error;
+    }
+  },
+
+  deleteRoom: async (roomId: string) => {
+    try {
+      // 1. Tìm phòng theo roomId
+      const roomsRes = await axios.get(`${API}/rooms`);
+      const room = roomsRes.data.find((r: any) => r.roomId === roomId);
+      if (!room) throw new Error("Không tìm thấy phòng");
+
+      // 2. Kiểm tra xem phòng có đang được thuê không
+      if (room.tenant) {
+        throw new Error("Không thể xóa phòng đang có người thuê!");
+      }
+
+      // 3. Xóa phòng
+      await axios.delete(`${API}/rooms/${room.id}`);
+      
+      // 4. Xóa trạng thái phòng
+      const statusRes = await axios.get(`${API}/roomStatus`);
+      const status = statusRes.data.find((s: any) => s.roomId === roomId);
+      if (status) {
+        await axios.delete(`${API}/roomStatus/${status.id}`);
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error("❌ Lỗi xóa phòng:", error);
+      throw error;
+    }
+  },
+
   // 7. Thống kê
   getStatistics: () => {
     return Promise.all([
       axios.get(`${API}/rooms`),
       axios.get(`${API}/roomStatus`),
-      axios.get(`${API}/contracts`),
       axios.get(`${API}/tenants?status_ne=inactive`)
-    ]).then(([roomsRes, statusRes, contractsRes, tenantsRes]) => {
+    ]).then(([roomsRes, statusRes, tenantsRes]) => {
       const rooms = roomsRes.data;
       const roomStatus = statusRes.data;
-      const contracts = contractsRes.data;
       const tenants = tenantsRes.data;
       
       const totalRooms = rooms.length;
@@ -79,13 +182,31 @@ export const hostService = {
 
   // 8. Quản lý người thuê
   getTenants: () => axios.get(`${API}/tenants?status_ne=inactive`),
-  getTenantById: (tenantId: string) => axios.get(`${API}/tenants/${tenantId}`),
-  updateTenant: (tenantId: string, data: any) => axios.put(`${API}/tenants/${tenantId}`, data),
-  deleteTenant: (tenantId: string) => axios.delete(`${API}/tenants/${tenantId}`),
+  getTenantById: (tenantId: string) => {
+    return axios.get(`${API}/tenants`).then(res => {
+      const tenant = res.data.find((t: any) => t.userId === tenantId);
+      if (!tenant) throw new Error("Không tìm thấy người thuê");
+      return { data: tenant };
+    });
+  },
+  updateTenant: (tenantId: string, data: any) => {
+    return axios.get(`${API}/tenants`).then(res => {
+      const tenant = res.data.find((t: any) => t.userId === tenantId);
+      if (!tenant) throw new Error("Không tìm thấy người thuê");
+      return axios.put(`${API}/tenants/${tenant.id}`, { ...tenant, ...data });
+    });
+  },
+  deleteTenant: (tenantId: string) => {
+    return axios.get(`${API}/tenants`).then(res => {
+      const tenant = res.data.find((t: any) => t.userId === tenantId);
+      if (!tenant) throw new Error("Không tìm thấy người thuê");
+      return axios.delete(`${API}/tenants/${tenant.id}`);
+    });
+  },
 
-  // 9. Gắn người thuê vào phòng
+  // 9. Gắn người thuê vào phòng (sau khi duyệt yêu cầu)
   assignTenantToRoom: async (tenantData: {
-    name: string;
+    tenantName: string;
     phone: string;
     email: string;
     roomId: string;
@@ -93,30 +214,50 @@ export const hostService = {
     startDate: string;
     endDate: string;
     monthlyRent: number;
-    contractId?: string;
+    contractId: string;
   }) => {
     try {
       const avatarUrl = `https://i.pravatar.cc/100?img=${Date.now() % 70 + 1}`;
+      const userId = `U${Date.now()}`;
+
       // 1. Tạo người thuê mới
       const tenantRes = await axios.post(`${API}/tenants`, {
-        ...tenantData,
+        userId: userId,
+        fullName: tenantData.tenantName,
+        phone: tenantData.phone,
+        email: tenantData.email,
         avatar: avatarUrl,
+        roomCode: tenantData.roomCode,
+        roomId: tenantData.roomId,
+        startDate: tenantData.startDate,
+        endDate: tenantData.endDate,
+        contractId: tenantData.contractId,
+        monthlyRent: tenantData.monthlyRent,
         status: 'active'
       });
 
       // 2. Cập nhật trạng thái phòng thành "Đã cho thuê"
-      await axios.patch(`${API}/roomStatus/${tenantData.roomId}`, { 
-        status: "Đã cho thuê" 
-      });
+      const statusRes = await axios.get(`${API}/roomStatus`);
+      const status = statusRes.data.find((s: any) => s.roomId === tenantData.roomId);
+      if (status) {
+        await axios.patch(`${API}/roomStatus/${status.id}`, { 
+          status: "Đã cho thuê" 
+        });
+      }
 
       // 3. Cập nhật thông tin tenant trong phòng
-      await axios.patch(`${API}/rooms/${tenantData.roomId}`, {
-        tenant: {
-          name: tenantData.name,
-          phone: tenantData.phone,
-          avatar: avatarUrl
-        }
-      });
+      const roomsRes = await axios.get(`${API}/rooms`);
+      const room = roomsRes.data.find((r: any) => r.roomId === tenantData.roomId);
+      if (room) {
+        await axios.patch(`${API}/rooms/${room.id}`, {
+          tenant: {
+            userId: userId,
+            fullName: tenantData.tenantName,
+            phone: tenantData.phone,
+            avatar: avatarUrl
+          }
+        });
+      }
 
       return tenantRes;
     } catch (error) {
@@ -127,83 +268,164 @@ export const hostService = {
 
   // 10. Chấm dứt hợp đồng/Trả phòng
   terminateContract: async (contractId: string) => {
+  try {
+    // Tìm hợp đồng theo contractId (không phải id)
+    const contractsRes = await axios.get(`${API}/contracts`);
+    const contract = contractsRes.data.find((c: any) => c.contractId === contractId);
+    if (!contract) throw new Error("Không tìm thấy hợp đồng");
+
+    const tenantsRes = await axios.get(`${API}/tenants?contractId=${contractId}&status_ne=inactive`);
+    const tenant = tenantsRes.data[0];
+    if (!tenant) throw new Error("Không tìm thấy người thuê tương ứng với hợp đồng");
+
+    const statusRes = await axios.get(`${API}/roomStatus`);
+    const status = statusRes.data.find((s: any) => s.roomId === tenant.roomId);
+    if (status) {
+      await axios.patch(`${API}/roomStatus/${status.id}`, { status: "Trống" });
+    }
+
+    const roomsRes = await axios.get(`${API}/rooms`);
+    const room = roomsRes.data.find((r: any) => r.roomId === tenant.roomId);
+    if (room) {
+      await axios.patch(`${API}/rooms/${room.id}`, { tenant: null });
+    }
+
+    // ✅ Cập nhật hợp đồng theo contract.id
+    await axios.patch(`${API}/contracts/${contract.id}`, {
+      status: "Đã chấm dứt",
+      terminatedDate: new Date().toISOString().split('T')[0]
+    });
+
+    await axios.patch(`${API}/tenants/${tenant.id}`, {
+      status: "inactive",
+      terminatedDate: new Date().toISOString().split("T")[0]
+    });
+
+    return { success: true, message: "Trả phòng thành công" };
+  } catch (error) {
+    console.error("❌ Lỗi chấm dứt hợp đồng:", error);
+    throw error;
+  }
+},
+
+
+  // 11. Duyệt yêu cầu với tạo hợp đồng và gắn người thuê
+  approveRentalRequestWithContract: async (
+    requestId: string,
+    contractData: {
+      roomId: string;
+      tenantId: string;
+      contractDate: string;
+      duration: number;
+      rentPrice: number;
+      terms: string;
+    }
+  ) => {
     try {
-      // 1. Tìm hợp đồng để lấy thông tin
-      const contractRes = await axios.get(`${API}/contracts/${contractId}`);
-      const contract = contractRes.data;
+      // 1. Lấy thông tin yêu cầu thuê
+      const requestRes = await axios.get(`${API}/rentalRequests/${requestId}`);
+      const request = requestRes.data;
       
-      if (!contract) {
-        throw new Error("Không tìm thấy hợp đồng");
-      }
+      // 2. Lấy thông tin phòng
+      const roomsRes = await axios.get(`${API}/rooms`);
+      const room = roomsRes.data.find((r: any) => r.roomId === contractData.roomId);
+      if (!room) throw new Error("Không tìm thấy phòng");
 
-      // 2. Tìm người thuê dựa trên thông tin hợp đồng
-      const tenantsRes = await axios.get(`${API}/tenants?contractId=${contractId}&status_ne=inactive`);
-      const tenant = tenantsRes.data[0];
+      // 3. Tạo ID cho hợp đồng
+      const contractId = `C${Date.now()}`;
       
-      if (!tenant) {
-        throw new Error("Không tìm thấy người thuê tương ứng với hợp đồng");
-      }
-
-      // 3. Cập nhật trạng thái phòng về "Trống"
-      await axios.patch(`${API}/roomStatus/${tenant.roomId}`, { 
-        status: "Trống" 
+      // 4. Tạo hợp đồng
+      await axios.post(`${API}/contracts`, {
+        contractId: contractId,
+        tenantName: request.tenantName,
+        phone: request.phone,
+        email: request.email,
+        roomId: contractData.roomId,
+        tenantId: contractData.tenantId,
+        contractDate: contractData.contractDate,
+        duration: contractData.duration,
+        rentPrice: contractData.rentPrice,
+        terms: contractData.terms,
+        status: "active"
       });
 
-      // 4. Xóa thông tin tenant khỏi phòng
-      await axios.patch(`${API}/rooms/${tenant.roomId}`, {
-        tenant: null
+      // 5. Tính ngày kết thúc hợp đồng
+      const startDate = new Date(contractData.contractDate);
+      const endDate = new Date(startDate.setMonth(startDate.getMonth() + contractData.duration));
+      
+      // 6. Gắn người thuê vào phòng
+      await hostService.assignTenantToRoom({
+        tenantName: request.tenantName,
+        phone: request.phone,
+        email: request.email,
+        roomId: contractData.roomId,
+        roomCode: contractData.roomId,
+        startDate: contractData.contractDate,
+        endDate: endDate.toISOString().split('T')[0],
+        monthlyRent: contractData.rentPrice,
+        contractId: contractId
       });
 
-      // 5. Đánh dấu hợp đồng là đã chấm dứt
-      await axios.patch(`${API}/contracts/${contractId}`, {
-        status: "Đã chấm dứt",
-        terminatedDate: new Date().toISOString().split('T')[0]
+      // 7. Duyệt yêu cầu
+      await axios.patch(`${API}/rentalRequests/${requestId}`, { 
+        status: "đã duyệt" 
       });
 
-      // 6. Đánh dấu người thuê là inactive
-      await axios.patch(`${API}/tenants/${tenant.userId}`, {
-        status: "inactive",
-        terminatedDate: new Date().toISOString().split("T")[0],
-      });
-
-      return { success: true, message: "Trả phòng thành công" };
+      return { success: true, contractId };
     } catch (error) {
-      console.error("❌ Lỗi chấm dứt hợp đồng:", error);
+      console.error("❌ Lỗi duyệt yêu cầu và tạo hợp đồng:", error);
       throw error;
     }
   },
 
-  // 11. Duyệt yêu cầu với gắn người thuê
-  approveRentalRequestWithAssignment: async (requestId: string, contractData: any) => {
+  // 12. Gia hạn hợp đồng
+  extendContract: async (tenantId: string, months: number) => {
     try {
-      // 1. Duyệt yêu cầu
-      await axios.patch(`${API}/rentalRequests/${requestId}`, { status: "đã duyệt" });
-      
-      // 2. Tạo hợp đồng
-      const contractRes = await axios.post(`${API}/contracts`, contractData);
-      const contractId = contractRes.data.contractId;
-      
-      // 3. Lấy thông tin phòng để có giá thuê
-      const roomRes = await axios.get(`${API}/rooms/${contractData.roomId}`);
-      const room = roomRes.data;
-      
-      // 4. Gắn người thuê vào phòng
-      await hostService.assignTenantToRoom({
-        name: contractData.tenantName,
-        phone: contractData.phone,
-        email: contractData.email || `${contractData.tenantName.toLowerCase().replace(/\s+/g, '')}@example.com`,
-        roomId: contractData.roomId,
-        roomCode: room.roomId || `P${contractData.roomId.toString().padStart(3, '0')}`,
-        startDate: contractData.startDate,
-        endDate: contractData.endDate,
-        monthlyRent: room.price || 3000000,
-        contractId: contractId
+      // 1. Lấy thông tin người thuê hiện tại
+      const tenantsRes = await axios.get(`${API}/tenants`);
+      const tenant = tenantsRes.data.find((t: any) => t.userId === tenantId);
+
+      if (!tenant || tenant.status === 'inactive') {
+        throw new Error("Không tìm thấy người thuê hoặc hợp đồng đã chấm dứt");
+      }
+
+      // 2. Tính ngày kết thúc mới
+      const currentEndDate = new Date(tenant.endDate);
+      const newEndDate = new Date(currentEndDate.setMonth(currentEndDate.getMonth() + months));
+
+      // 3. Cập nhật ngày kết thúc hợp đồng cho người thuê
+      await axios.patch(`${API}/tenants/${tenant.id}`, {
+        endDate: newEndDate.toISOString().split('T')[0]
       });
 
-      return contractRes;
+      // 4. Cập nhật hợp đồng nếu có
+      if (tenant.contractId) {
+        const contractsRes = await axios.get(`${API}/contracts`);
+        const contract = contractsRes.data.find((c: any) => c.contractId === tenant.contractId);
+        if (contract) {
+          await axios.patch(`${API}/contracts/${contract.id}`, {
+            duration: contract.duration + months,
+            extendedDate: new Date().toISOString().split('T')[0],
+            extendedMonths: months
+          });
+        }
+      }
+
+      return { 
+        success: true, 
+        newEndDate: newEndDate.toISOString().split('T')[0],
+        message: `Gia hạn thêm ${months} tháng thành công`
+      };
     } catch (error) {
-      console.error("❌ Lỗi duyệt yêu cầu và gắn người thuê:", error);
+      console.error("❌ Lỗi gia hạn hợp đồng:", error);
       throw error;
     }
-  }
+  },
+
+  // 13. Lấy lịch sử hợp đồng (bao gồm cả đã chấm dứt)
+  getContractHistory: () => axios.get(`${API}/contracts`),
+  getContractHistoryByRoom: (roomId: string) => axios.get(`${API}/contracts?roomId=${roomId}`),
+  
+  // 14. Lấy danh sách người thuê cũ (đã trả phòng)
+  getFormerTenants: () => axios.get(`${API}/tenants?status=inactive`),
 };

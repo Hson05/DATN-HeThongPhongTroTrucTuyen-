@@ -6,9 +6,9 @@ import { hostService } from "../../../services/hostService";
 import RentalRequestCard from "../../../components/RentalRequestCard";
 import { Users, Filter } from "lucide-react";
 
-// Sửa lại interface cho đúng chuẩn database
 interface RentalRequest {
-  requestId: string;           // ID yêu cầu đặt phòng
+  id: number;
+  requestId: string;
   tenantName: string;
   phone: string;
   email: string;
@@ -31,16 +31,22 @@ const BookingRequestList = () => {
       setLoading(true);
       const res = await hostService.getRentalRequests();
       const requestsWithDetails = res.data.map((req: any) => ({
-        ...req,
-        submittedAt: new Date().toLocaleDateString('vi-VN') + " - " + new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-        avatar: "https://i.pravatar.cc/100?img=" + req.requestId,
-        message: req.message || "Tôi muốn thuê phòng này, có thể xem phòng được không?"
+        requestId: req.requestId?.toString() || "",
+        tenantName: req.tenantName,
+        phone: req.phone,
+        email: req.email,
+        desiredRoomId: req.desiredRoomId,
+        status: req.status,
+        message: req.message || "Tôi muốn thuê phòng này, có thể xem phòng được không?",
+        submittedAt: new Date(req.submittedAt).toLocaleDateString('vi-VN') + " - " + 
+                    new Date(req.submittedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+        avatar: `https://i.pravatar.cc/100?img=${req.requestId || Math.floor(Math.random() * 70) + 1}`,
       }));
       setRequests(requestsWithDetails);
       setFilteredRequests(requestsWithDetails);
     } catch (error) {
       console.error("Error fetching rental requests:", error);
-      alert("❌ Lỗi khi tải yêu cầu thuê phòng. Vui lòng kiểm tra lại JSON Server.");
+      alert("❌ Lỗi khi tải yêu cầu thuê phòng.");
     } finally {
       setLoading(false);
     }
@@ -50,45 +56,56 @@ const BookingRequestList = () => {
     fetchRequests();
   }, []);
 
-  useEffect(() => {
-    let filtered = requests;
-    if (statusFilter !== "all") {
-      filtered = requests.filter(req => req.status === statusFilter);
-    }
-    setFilteredRequests(filtered);
-  }, [statusFilter, requests]);
+useEffect(() => {
+  let filtered = requests;
+  if (statusFilter !== "all") {
+    filtered = requests.filter(req => req.status === statusFilter);
+  }
+  setFilteredRequests(filtered);
+}, [statusFilter, requests]);
+
 
   const handleApprove = async (req: RentalRequest) => {
-    const confirm = window.confirm("Bạn có chắc muốn duyệt và tạo hợp đồng cho yêu cầu này?");
-    if (!confirm) return;
+  const confirm = window.confirm("Bạn có chắc muốn duyệt và tạo hợp đồng cho yêu cầu này?");
+  if (!confirm) return;
 
-    try {
-      // Chuyển sang trang tạo hợp đồng với thông tin từ yêu cầu
-      navigate("/host/create-contract", {
-        state: {
-          tenantName: req.tenantName,
-          phone: req.phone,
-          email: req.email,
-          roomId: req.desiredRoomId,
-          requestId: req.requestId
-        },
-      });
-    } catch (error) {
-      alert("Lỗi khi duyệt yêu cầu!");
-      console.error(error);
-    }
-  };
+  try {
+    // ✅ Cập nhật trạng thái sang đã duyệt trên server
+    await hostService.approveRentalRequest(req.requestId);
+
+    // ✅ Cập nhật trạng thái trong danh sách hiển thị
+    const updatedRequests = requests.map(r =>
+      r.requestId === req.requestId ? { ...r, status: "đã duyệt" } : r
+    );
+    setRequests(updatedRequests);
+
+    // ✅ Điều hướng sang trang tạo hợp đồng
+    navigate("/host/create-contract", {
+      state: {
+        tenantName: req.tenantName,
+        phone: req.phone,
+        email: req.email,
+        roomId: req.desiredRoomId,
+        requestId: req.requestId
+      }
+    });
+  } catch (error) {
+    alert("❌ Lỗi khi duyệt yêu cầu!");
+    console.error(error);
+  }
+};
+
 
   const handleReject = async (requestId: string) => {
-    const confirm = window.confirm("Bạn có chắc muốn từ chối?");
+    const confirm = window.confirm("Bạn có chắc muốn từ chối yêu cầu này?");
     if (!confirm) return;
 
     try {
       await hostService.rejectRentalRequest(requestId);
-      alert("Đã từ chối yêu cầu.");
+      alert("✅ Đã từ chối yêu cầu.");
       fetchRequests();
     } catch (error) {
-      alert("Lỗi khi từ chối yêu cầu!");
+      alert("❌ Lỗi khi từ chối yêu cầu!");
       console.error(error);
     }
   };

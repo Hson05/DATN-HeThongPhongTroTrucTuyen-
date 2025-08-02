@@ -34,8 +34,7 @@ interface Room {
 }
 
 interface RentalRequest {
-  requestId: string; // Thêm dòng này
-  id: string;
+  requestId: string;
   tenantName: string;
   phone: string;
   email: string;
@@ -95,6 +94,8 @@ const Dashboard = () => {
       ]);
 
       setStatistics(statsRes.data);
+      
+      // Process rooms data
       setRooms(
         roomsRes.data.map((room: any) => ({
           roomId: room.roomId,
@@ -128,41 +129,30 @@ const Dashboard = () => {
             : undefined,
         }))
       );
+      
+      // Process rental requests data
       setRentalRequests(
-        requestsRes.data.map((req: any) => ({
-          requestId: req.requestId?.toString() || req.id?.toString() || "", // Thêm dòng này
-          id: req.id?.toString() || "",
-          tenantName: req.tenantName,
-          phone: req.phone,
-          email: req.email,
-          desiredRoomId: req.desiredRoomId,
-          status: req.status,
-          message: req.message,
-          submittedAt:
-            new Date().toLocaleDateString("vi-VN") +
-            " - " +
-            new Date().toLocaleTimeString("vi-VN", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-          avatar: "https://i.pravatar.cc/100?img=" + req.id,
-        }))
+        requestsRes.data
+          .filter((req: any) => req.status === "chờ duyệt") // Chỉ hiển thị yêu cầu chờ duyệt
+          .map((req: any) => ({
+            requestId: req.requestId?.toString() || "",
+            tenantName: req.tenantName,
+            phone: req.phone,
+            email: req.email,
+            desiredRoomId: req.desiredRoomId,
+            status: req.status,
+            message: req.message,
+            submittedAt: new Date(req.submittedAt).toLocaleDateString("vi-VN") +
+                        " - " + new Date(req.submittedAt).toLocaleTimeString("vi-VN", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }),
+            avatar: `https://i.pravatar.cc/100?img=${req.requestId || Math.floor(Math.random() * 70) + 1}`,
+          }))
       );
-      setTenants(
-        tenantsRes.data.map((tenant: any) => ({
-          userId: tenant.userId,
-          fullName: tenant.fullName,
-          phone: tenant.phone,
-          email: tenant.email,
-          avatar: tenant.avatar,
-          roomCode: tenant.roomCode,
-          roomId: tenant.roomId,
-          startDate: tenant.startDate,
-          endDate: tenant.endDate,
-          contractId: tenant.contractId,
-          monthlyRent: tenant.monthlyRent,
-        }))
-      );
+      
+      // Process tenants data
+      setTenants(tenantsRes.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -180,10 +170,11 @@ const Dashboard = () => {
 
     try {
       await hostService.deleteRoom(roomId);
-      setRooms(rooms.filter((room) => room.roomId !== roomId));
-    } catch (err) {
-      alert("❌ Lỗi khi xóa phòng!");
-      console.error(err);
+      await fetchData(); // Refresh data
+      alert("✅ Đã xóa phòng thành công!");
+    } catch (error: any) {
+      alert(`❌ Lỗi khi xóa phòng: ${error.message || 'Lỗi không xác định'}`);
+      console.error(error);
     }
   };
 
@@ -198,7 +189,7 @@ const Dashboard = () => {
           phone: request.phone,
           email: request.email,
           roomId: request.desiredRoomId,
-          requestId: request.id
+          requestId: request.requestId
         },
       });
     } catch (error) {
@@ -206,16 +197,16 @@ const Dashboard = () => {
     }
   };
 
-  const handleRejectRequest = async (id: string) => {
+  const handleRejectRequest = async (requestId: string) => {
     const confirm = window.confirm("Bạn có chắc muốn từ chối?");
     if (!confirm) return;
 
     try {
-      await hostService.rejectRentalRequest(id);
-      setRentalRequests(rentalRequests.filter(req => req.id !== id));
-      alert("Đã từ chối yêu cầu.");
+      await hostService.rejectRentalRequest(requestId);
+      await fetchData(); // Refresh data
+      alert("✅ Đã từ chối yêu cầu.");
     } catch (error) {
-      alert("Lỗi khi từ chối yêu cầu!");
+      alert("❌ Lỗi khi từ chối yêu cầu!");
     }
   };
 
@@ -232,12 +223,10 @@ const Dashboard = () => {
       }
 
       await hostService.terminateContract(tenant.contractId);
+      await fetchData(); // Refresh data
       alert("✅ Đã chấm dứt hợp đồng thành công!");
-      fetchData(); // Refresh data
     } catch (error: any) {
-      alert(
-        `❌ Có lỗi xảy ra: ${error.message || "Không thể chấm dứt hợp đồng"}`
-      );
+      alert(`❌ Có lỗi xảy ra: ${error.message || "Không thể chấm dứt hợp đồng"}`);
       console.error(error);
     }
   };
@@ -259,7 +248,7 @@ const Dashboard = () => {
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Chào Nguyễn Thị Mai!
+            Chào Nguyễn Thị Mai! 👋
           </h1>
           <p className="text-gray-600">
             Quản lý phòng trọ và theo dõi doanh thu của bạn
@@ -395,7 +384,7 @@ const Dashboard = () => {
           <div className="lg:col-span-1">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900">
-                Yêu cầu thuê
+                Yêu cầu thuê ({rentalRequests.length})
               </h2>
               <button
                 onClick={() => navigate("/host/rental-request")}
@@ -414,12 +403,12 @@ const Dashboard = () => {
             ) : (
               <div className="space-y-4">
                 {rentalRequests.slice(0, 2).map((request) => (
-                <RentalRequestCard
-  key={request.id}
-  request={request}
-  onApprove={() => handleApproveRequest(request)}
-  onReject={() => handleRejectRequest(request.id)}
-/>
+                  <RentalRequestCard
+                    key={request.requestId}
+                    request={request}
+                    onApprove={() => handleApproveRequest(request)}
+                    onReject={() => handleRejectRequest(request.requestId)}
+                  />
                 ))}
               </div>
             )}

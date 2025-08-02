@@ -1,4 +1,4 @@
-// 📁 src/pages/host/UpdateProfile.tsx
+// 📁 src/pages/host/profile/UpdateProfile.tsx
 // Trang cập nhật thông tin cá nhân của chủ nhà
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";

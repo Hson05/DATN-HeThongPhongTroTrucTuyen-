@@ -1,4 +1,4 @@
-// src/pages/host/TenantDetail.tsx
+// src/pages/host/tenant/TenantDetail.tsx
 // Trang chi tiết người thuê
 import { X, User, Phone, Mail, Home, Calendar, FileText, DollarSign } from "lucide-react";
 import { hostService } from "../../../services/hostService";
@@ -6,7 +6,7 @@ import { hostService } from "../../../services/hostService";
 interface Props {
   tenant: any;
   onClose: () => void;
-  onUpdated?: () => void; // Thêm prop này
+  onUpdated?: () => void;
 }
 
 const TenantDetail = ({ tenant, onClose, onUpdated }: Props) => {
@@ -19,31 +19,30 @@ const TenantDetail = ({ tenant, onClose, onUpdated }: Props) => {
   };
 
   const handleExtendContract = async (months: number) => {
-    if (!tenant.endDate) {
-      alert("❌ Không tìm thấy ngày kết thúc hợp đồng.");
+    if (!tenant.userId) {
+      alert("❌ Không tìm thấy thông tin người thuê.");
       return;
     }
 
-    try {
-      const currentEndDate = new Date(tenant.endDate);
-      const newEndDate = new Date(currentEndDate.setMonth(currentEndDate.getMonth() + months));
-      const newEndDateStr = newEndDate.toISOString().split("T")[0];
+    const confirm = window.confirm(
+      `Bạn có chắc muốn gia hạn hợp đồng thêm ${months} tháng cho ${tenant.fullName}?`
+    );
+    if (!confirm) return;
 
-      await hostService.updateTenant(tenant.userId, {
-        ...tenant,
-        endDate: newEndDateStr,
-      });
-      alert(`✅ Gia hạn thêm ${months} tháng thành công!\nNgày kết thúc mới: ${newEndDateStr}`);
+    try {
+      const result = await hostService.extendContract(tenant.userId, months);
+      alert(`✅ ${result.message}\nNgày kết thúc mới: ${new Date(result.newEndDate).toLocaleDateString('vi-VN')}`);
       if (onUpdated) onUpdated();
       onClose();
-    } catch (error) {
-      console.error("❌ Lỗi khi gọi API gia hạn:", error);
-      alert("❌ Gia hạn hợp đồng thất bại.");
+    } catch (error: any) {
+      console.error("❌ Lỗi khi gia hạn hợp đồng:", error);
+      alert(`❌ Gia hạn hợp đồng thất bại: ${error.message || 'Lỗi không xác định'}`);
     }
   };
 
   const remainingDays = getRemainingDays();
   const isExpired = remainingDays <= 0;
+  const isExpiringSoon = remainingDays <= 30 && remainingDays > 0;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
@@ -70,9 +69,9 @@ const TenantDetail = ({ tenant, onClose, onUpdated }: Props) => {
                 />
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">{tenant.fullName}</h3>
                 <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                  isExpired ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                  isExpired ? 'bg-red-100 text-red-800' : isExpiringSoon ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
                 }`}>
-                  {isExpired ? 'Hết hạn hợp đồng' : 'Đang thuê'}
+                  {isExpired ? 'Hết hạn hợp đồng' : isExpiringSoon ? 'Sắp hết hạn' : 'Đang thuê'}
                 </div>
               </div>
 
@@ -166,7 +165,7 @@ const TenantDetail = ({ tenant, onClose, onUpdated }: Props) => {
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-gray-600">Tiến độ hợp đồng</span>
                     <span className={`text-sm font-medium ${
-                      isExpired ? 'text-red-600' : remainingDays <= 30 ? 'text-yellow-600' : 'text-green-600'
+                      isExpired ? 'text-red-600' : isExpiringSoon ? 'text-yellow-600' : 'text-green-600'
                     }`}>
                       {isExpired ? 'Đã hết hạn' : `Còn ${remainingDays} ngày`}
                     </span>
@@ -174,7 +173,7 @@ const TenantDetail = ({ tenant, onClose, onUpdated }: Props) => {
                   <div className="w-full bg-gray-200 rounded-full h-3">
                     <div 
                       className={`h-3 rounded-full ${
-                        isExpired ? 'bg-red-500' : remainingDays <= 30 ? 'bg-yellow-500' : 'bg-green-500'
+                        isExpired ? 'bg-red-500' : isExpiringSoon ? 'bg-yellow-500' : 'bg-green-500'
                       }`}
                       style={{ 
                         width: `${Math.max(0, Math.min(100, ((365 - remainingDays) / 365) * 100))}%` 
@@ -185,19 +184,22 @@ const TenantDetail = ({ tenant, onClose, onUpdated }: Props) => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex space-x-4">
-                <div className="flex flex-col md:flex-row gap-3">
-                {[6, 12].map(month => (
+              <div className="space-y-4">
+                <h4 className="font-semibold text-gray-900">Gia hạn hợp đồng</h4>
+                <div className="flex flex-col sm:flex-row gap-3">
                   <button
-                    key={month}
-                    onClick={() => handleExtendContract(month)}
+                    onClick={() => handleExtendContract(6)}
                     className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition font-medium"
                   >
-                    Gia hạn {month} tháng
+                    Gia hạn 6 tháng
                   </button>
-                ))}
-              </div>
-
+                  <button
+                    onClick={() => handleExtendContract(12)}
+                    className="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition font-medium"
+                  >
+                    Gia hạn 12 tháng
+                  </button>
+                </div>
               </div>
             </div>
           </div>

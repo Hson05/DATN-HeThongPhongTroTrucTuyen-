@@ -1,3 +1,4 @@
+// client/src/components/Header.tsx
 import { Link, useLocation } from "react-router-dom";
 import { Bell, User } from "lucide-react";
 

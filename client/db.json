@@ -1,31 +1,36 @@
 {
   "hosts": [
     {
+      "id": 1,
       "userId": "1",
-      "fullName": "Nguyễn Thị Mai",
+      "fullName": "Nguyễn Thế Vinh",
       "phone": "0909123456",
-      "email": "sonhoangvu205@gmail.com",
+      "email": "nguyenvinh@gmail.com",
       "avatar": "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&dpr=1",
       "address": "123 Đường Lê Lợi, Quận 1, TP.HCM"
     }
   ],
   "roomStatus": [
     {
+      "id": 1,
       "roomId": "P101",
       "name": "Phòng 101",
       "status": "Đã cho thuê"
     },
     {
+      "id": 2,
       "roomId": "P102",
       "name": "Phòng 102",
-      "status": "Đang sửa chữa"
+      "status": "Trống"
     },
     {
+      "id": 3,
       "roomId": "P103",
       "name": "Phòng 103",
-      "status": "Đã cho thuê"
+      "status": "Trống"
     },
     {
+      "id": 4,
       "roomId": "P104",
       "name": "Phòng 104",
       "status": "Trống"
@@ -33,16 +38,18 @@
   ],
   "rentalRequests": [
     {
+      "id": 1,
       "requestId": "1",
       "tenantName": "Nguyễn Văn A",
       "phone": "0909123456",
       "email": "vana@example.com",
       "desiredRoomId": "P101",
-      "status": "đã duyệt",
+      "status": "chờ duyệt",
       "message": "Tôi muốn thuê phòng này, có thể xem phòng được không?",
       "submittedAt": "2025-07-28T08:30:00Z"
     },
     {
+      "id": 2,
       "requestId": "2",
       "tenantName": "Trần Thị B",
       "phone": "0912345678",
@@ -53,16 +60,18 @@
       "submittedAt": "2025-07-27T15:45:00Z"
     },
     {
+      "id": 3,
       "requestId": "3",
       "tenantName": "Lê Văn C",
       "phone": "0987654321",
       "email": "levanc@example.com",
       "desiredRoomId": "P103",
-      "status": "đã duyệt",
+      "status": "chờ duyệt",
       "message": "Tôi cần phòng gần trường học.",
       "submittedAt": "2025-07-25T10:00:00Z"
     },
     {
+      "id": 4,
       "requestId": "4",
       "tenantName": "Phạm Thị D",
       "phone": "0977778888",
@@ -75,6 +84,7 @@
   ],
   "contracts": [
     {
+      "id": 1,
       "contractId": "C001",
       "tenantName": "Nguyễn Văn A",
       "phone": "0909123456",
@@ -82,56 +92,64 @@
       "roomId": "P101",
       "tenantId": "U001",
       "contractDate": "2025-01-01",
-      "duration": 12,
+      "duration": 18,
       "rentPrice": 3000000,
       "deposit": 3000000,
       "terms": "Người thuê có trách nhiệm bảo vệ tài sản phòng trọ và thanh toán tiền thuê đúng hạn.",
-      "status": "active"
+      "status": "active",
+      "extendedDate": "2025-08-02",
+      "extendedMonths": 6
     },
     {
-      "contractId": "C002",
-      "roomId": "P101",
-      "tenantId": "U001",
-      "contractDate": "2025-08-15",
-      "duration": 12,
-      "rentPrice": 3000000,
-      "terms": "hjhj done",
-      "status": "active"
-    },
-    {
-      "contractId": "C003",
-      "roomId": "P101",
-      "tenantId": "U001",
-      "contractDate": "2025-08-15",
-      "duration": 12,
-      "rentPrice": 3000000,
-      "terms": "hjhj",
-      "status": "active"
-    },
-    {
-      "contractId": "C004",
+      "contractId": "C1754153479453",
+      "tenantName": "Trần Thị B",
+      "phone": "0912345678",
+      "email": "tranb@example.com",
       "roomId": "P102",
-      "tenantId": "U001",
-      "contractDate": "2025-08-15",
+      "tenantId": "Trần Thị B",
+      "contractDate": "2025-08-02",
       "duration": 12,
       "rentPrice": 2500000,
-      "terms": "ác",
-      "status": "active"
+      "terms": "abohicsl",
+      "status": "Đã chấm dứt",
+      "id": 2,
+      "terminatedDate": "2025-08-02"
     },
     {
-      "roomId": "P101",
-      "tenantId": "Vu Hoang Son",
-      "contractDate": "2025-08-01",
+      "contractId": "C1754159222453",
+      "tenantName": "Trần Thị B",
+      "phone": "0912345678",
+      "email": "tranb@example.com",
+      "roomId": "P102",
+      "tenantId": "Trần Thị B",
+      "contractDate": "2025-08-03",
+      "duration": 18,
+      "rentPrice": 2500000,
+      "terms": "rdytfuyg",
+      "status": "Đã chấm dứt",
+      "id": 3,
+      "extendedDate": "2025-08-02",
+      "extendedMonths": 6,
+      "terminatedDate": "2025-08-02"
+    },
+    {
+      "contractId": "C1754159313492",
+      "tenantName": "Trần Thị B",
+      "phone": "0912345678",
+      "email": "tranb@example.com",
+      "roomId": "P102",
+      "tenantId": "Trần Thị B",
+      "contractDate": "2025-08-03",
       "duration": 12,
-      "rentPrice": 500000,
-      "terms": "dep trai",
-      "id": "C1754092825341",
-      "contractId": "C1754092825341"
+      "rentPrice": 2500000,
+      "terms": "xgf",
+      "status": "active",
+      "id": 4
     }
   ],
   "rooms": [
     {
-      "id": "P101",
+      "id": 1,
       "roomId": "P101",
       "area": 25,
       "price": 3000000,
@@ -156,7 +174,7 @@
       }
     },
     {
-      "id": "P102",
+      "id": 2,
       "roomId": "P102",
       "area": 20,
       "price": 2500000,
@@ -175,7 +193,7 @@
       "tenant": null
     },
     {
-      "id": "P103",
+      "id": 3,
       "roomId": "P103",
       "area": 30,
       "price": 3500000,
@@ -196,7 +214,7 @@
       "tenant": null
     },
     {
-      "id": "P104",
+      "id": 4,
       "roomId": "P104",
       "area": 22,
       "price": 2800000,
@@ -217,6 +235,7 @@
   ],
   "tenants": [
     {
+      "id": 1,
       "userId": "U001",
       "fullName": "Nguyễn Văn A",
       "phone": "0909123456",
@@ -225,10 +244,57 @@
       "roomCode": "P101",
       "roomId": "P101",
       "startDate": "2025-01-01",
-      "endDate": "2026-07-01",
+      "endDate": "2027-01-01",
       "contractId": "C001",
       "monthlyRent": 3000000,
       "status": "active"
+    },
+    {
+      "userId": "U1754153479485",
+      "fullName": "Trần Thị B",
+      "phone": "0912345678",
+      "email": "tranb@example.com",
+      "avatar": "https://i.pravatar.cc/100?img=16",
+      "roomCode": "P102",
+      "roomId": "P102",
+      "startDate": "2025-08-02",
+      "endDate": "2026-08-02",
+      "contractId": "C1754153479453",
+      "monthlyRent": 2500000,
+      "status": "inactive",
+      "id": 2,
+      "terminatedDate": "2025-08-02"
+    },
+    {
+      "userId": "U1754159222485",
+      "fullName": "Trần Thị B",
+      "phone": "0912345678",
+      "email": "tranb@example.com",
+      "avatar": "https://i.pravatar.cc/100?img=6",
+      "roomCode": "P102",
+      "roomId": "P102",
+      "startDate": "2025-08-03",
+      "endDate": "2027-02-03",
+      "contractId": "C1754159222453",
+      "monthlyRent": 2500000,
+      "status": "inactive",
+      "id": 3,
+      "terminatedDate": "2025-08-02"
+    },
+    {
+      "userId": "U1754159313523",
+      "fullName": "Trần Thị B",
+      "phone": "0912345678",
+      "email": "tranb@example.com",
+      "avatar": "https://i.pravatar.cc/100?img=44",
+      "roomCode": "P102",
+      "roomId": "P102",
+      "startDate": "2025-08-03",
+      "endDate": "2026-08-03",
+      "contractId": "C1754159313492",
+      "monthlyRent": 2500000,
+      "status": "active",
+      "id": 4
     }
   ]
 }

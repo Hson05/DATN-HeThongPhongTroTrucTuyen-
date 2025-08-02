@@ -1,4 +1,4 @@
-// 📁 src/pages/host/ContractList.tsx
+// 📁 src/pages/host/contract/ContractList.tsx
 // TRANG DANH SÁCH HỢP ĐỒNG
 import { useEffect, useState } from "react";
 import { hostService } from "../../../services/hostService";
@@ -6,13 +6,16 @@ import { useNavigate } from "react-router-dom";
 import { FileText, Search, Eye, Trash2 } from "lucide-react";
 
 interface Contract {
+  id: number;
   contractId: string;
   roomId: string;
   tenantId: string;
+  tenantName?: string;
   contractDate: string;
   duration: number;
   rentPrice: number;
   terms: string;
+  status?: string;
 }
 
 const ContractList = () => {
@@ -44,13 +47,13 @@ const ContractList = () => {
     fetchContracts();
   }, [filterRoomId]);
 
-  const handleDelete = async (contractId: string) => {
+  const handleDelete = async (contractId: string, contractDbId: number) => {
     const confirmDelete = window.confirm("Bạn có chắc muốn xóa hợp đồng này?");
     if (!confirmDelete) return;
 
     try {
       await hostService.terminateContract(contractId);
-      await hostService.deleteContract(contractId);
+      await hostService.deleteContract(contractDbId.toString());
       alert("Đã xóa hợp đồng.");
       fetchContracts();
     } catch (error) {
@@ -123,7 +126,7 @@ const ContractList = () => {
                     Mã hợp đồng
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Người thuê (ID)
+                    Người thuê
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Phòng
@@ -138,19 +141,22 @@ const ContractList = () => {
                     Giá thuê
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Trạng thái
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Hành động
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {contracts.map((contract) => (
-                  <tr key={contract.contractId} className="hover:bg-gray-50">
+                  <tr key={contract.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       #{contract.contractId}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
-                        {contract.tenantId}
+                        {contract.tenantName || contract.tenantId}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -167,17 +173,26 @@ const ContractList = () => {
                         {contract.rentPrice != null ? contract.rentPrice.toLocaleString() : "0"}₫
                       </span>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        contract.status === 'Đã chấm dứt' 
+                          ? 'bg-red-100 text-red-800' 
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {contract.status || 'Đang hoạt động'}
+                      </span>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
                         <button
-                          onClick={() => navigate(`/host/contracts/${contract.contractId}`)}
+                          onClick={() => navigate(`/host/contracts/${contract.id}`)}
                           className="flex items-center space-x-1 text-blue-600 hover:text-blue-900"
                         >
                           <Eye className="w-4 h-4" />
                           <span>Xem</span>
                         </button>
                         <button
-                          onClick={() => handleDelete(contract.contractId)}
+                          onClick={() => handleDelete(contract.contractId, contract.id)}
                           className="flex items-center space-x-1 text-red-600 hover:text-red-900"
                         >
                           <Trash2 className="w-4 h-4" />

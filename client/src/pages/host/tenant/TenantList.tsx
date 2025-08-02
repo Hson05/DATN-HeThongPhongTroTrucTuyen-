@@ -1,4 +1,4 @@
-// src/pages/host/TenantList.tsx
+// src/pages/host/tenant/TenantList.tsx
 // Trang danh sách người thuê hiện tại
 import { useEffect, useState } from "react";
 import { hostService } from "../../../services/hostService";

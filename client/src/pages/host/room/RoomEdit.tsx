@@ -1,5 +1,5 @@
 // Sửa thông tin phòng
-// ../client/src/pages/host/UpdateRoom.tsx
+// ../client/src/pages/host/room/UpdateRoom.tsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { hostService } from "../../../services/hostService";
@@ -9,7 +9,6 @@ export default function UpdateRoom() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     roomId: "",
-    roomTitle: "",
     area: 0,
     price: 0,
     utilities: [],
@@ -19,10 +18,6 @@ export default function UpdateRoom() {
     location: "",
     deposit: "",
     electricity: "",
-    roomType: "single",
-    status: "available",
-    terms: "",
-    hostId: "",
   });
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -35,20 +30,15 @@ export default function UpdateRoom() {
           const room = res.data;
           setFormData({
             roomId: room.roomId || "",
-            roomTitle: room.roomTitle || "",
             area: room.area || 0,
             price: room.price || 0,
             utilities: Array.isArray(room.utilities) ? room.utilities : (room.utilities ? room.utilities.split(",").map((u: string) => u.trim()) : []),
             maxPeople: room.maxPeople || 1,
-            images: Array.isArray(room.images) ? room.images : (room.image ? [room.image] : [""]),
+            images: Array.isArray(room.images) ? room.images : (room.images ? [room.images] : [""]),
             description: room.description || "",
             location: room.location || "",
             deposit: room.deposit || "",
             electricity: room.electricity || "",
-            roomType: room.roomType || "single",
-            status: room.status || "available",
-            terms: room.terms || "",
-            hostId: room.hostId || "",
           });
         })
         .catch(() => {
@@ -116,7 +106,7 @@ export default function UpdateRoom() {
     <div className="max-w-4xl mx-auto p-6">
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-          🛠 Cập nhật thông tin phòng
+          🛠 Cập nhật thông tin phòng {formData.roomId}
         </h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -131,19 +121,7 @@ export default function UpdateRoom() {
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tiêu đề phòng *
-              </label>
-              <input
-                type="text"
-                name="roomTitle"
-                value={formData.roomTitle}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
+                disabled
               />
             </div>
             <div>
@@ -171,22 +149,6 @@ export default function UpdateRoom() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Loại phòng *
-              </label>
-              <select
-                name="roomType"
-                value={formData.roomType}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              >
-                <option value="single">Đơn</option>
-                <option value="shared">Chung</option>
-                <option value="apartment">Căn hộ</option>
-              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -272,18 +234,6 @@ export default function UpdateRoom() {
               value={formData.description}
               onChange={handleChange}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Điều khoản thuê
-            </label>
-            <textarea
-              name="terms"
-              value={formData.terms}
-              onChange={handleChange}
-              rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>

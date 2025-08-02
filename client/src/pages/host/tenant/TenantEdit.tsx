@@ -1,4 +1,4 @@
-// 📁 client/src/pages/host/TenantEdit.tsx
+// 📁 client/src/pages/host/tenant/TenantEdit.tsx
 // Trang chỉnh sửa thông tin người thuê
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
