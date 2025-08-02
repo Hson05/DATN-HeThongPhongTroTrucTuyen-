@@ -1,73 +1,73 @@
 {
   "hosts": [
     {
-      "id": "1",
-      "name": "Nguyễn Thị Mai",
+      "userId": "1",
+      "fullName": "Nguyễn Thị Mai",
       "phone": "0909123456",
-      "email": "mai@gmail.com",
+      "email": "sonhoangvu205@gmail.com",
       "avatar": "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&dpr=1",
       "address": "123 Đường Lê Lợi, Quận 1, TP.HCM"
     }
   ],
   "roomStatus": [
     {
-      "id": 1,
+      "roomId": "P101",
       "name": "Phòng 101",
       "status": "Đã cho thuê"
     },
     {
-      "id": 2,
+      "roomId": "P102",
       "name": "Phòng 102",
-      "status": "Trống"
+      "status": "Đang sửa chữa"
     },
     {
-      "id": 3,
+      "roomId": "P103",
       "name": "Phòng 103",
-      "status": "Trống"
+      "status": "Đã cho thuê"
     },
     {
-      "id": 4,
+      "roomId": "P104",
       "name": "Phòng 104",
       "status": "Trống"
     }
   ],
   "rentalRequests": [
     {
-      "id": "1",
+      "requestId": "1",
       "tenantName": "Nguyễn Văn A",
       "phone": "0909123456",
       "email": "vana@example.com",
-      "desiredRoomId": "1",
+      "desiredRoomId": "P101",
       "status": "đã duyệt",
       "message": "Tôi muốn thuê phòng này, có thể xem phòng được không?",
       "submittedAt": "2025-07-28T08:30:00Z"
     },
     {
-      "id": "2",
+      "requestId": "2",
       "tenantName": "Trần Thị B",
       "phone": "0912345678",
       "email": "tranb@example.com",
-      "desiredRoomId": "2",
+      "desiredRoomId": "P102",
       "status": "đã duyệt",
       "message": "Xin chào, tôi quan tâm đến phòng 102.",
       "submittedAt": "2025-07-27T15:45:00Z"
     },
     {
-      "id": "3",
+      "requestId": "3",
       "tenantName": "Lê Văn C",
       "phone": "0987654321",
       "email": "levanc@example.com",
-      "desiredRoomId": "3",
+      "desiredRoomId": "P103",
       "status": "đã duyệt",
       "message": "Tôi cần phòng gần trường học.",
       "submittedAt": "2025-07-25T10:00:00Z"
     },
     {
-      "id": "4",
+      "requestId": "4",
       "tenantName": "Phạm Thị D",
       "phone": "0977778888",
       "email": "phamtd@example.com",
-      "desiredRoomId": "4",
+      "desiredRoomId": "P104",
       "status": "chờ duyệt",
       "message": "Có thể sắp xếp xem phòng vào cuối tuần không?",
       "submittedAt": "2025-07-28T09:15:00Z"
@@ -75,45 +75,99 @@
   ],
   "contracts": [
     {
-      "id": 1,
+      "contractId": "C001",
       "tenantName": "Nguyễn Văn A",
       "phone": "0909123456",
       "email": "vana@example.com",
-      "roomId": "1",
-      "startDate": "2025-01-01",
-      "endDate": "2025-12-31",
+      "roomId": "P101",
+      "tenantId": "U001",
+      "contractDate": "2025-01-01",
+      "duration": 12,
+      "rentPrice": 3000000,
       "deposit": 3000000,
       "terms": "Người thuê có trách nhiệm bảo vệ tài sản phòng trọ và thanh toán tiền thuê đúng hạn.",
       "status": "active"
+    },
+    {
+      "contractId": "C002",
+      "roomId": "P101",
+      "tenantId": "U001",
+      "contractDate": "2025-08-15",
+      "duration": 12,
+      "rentPrice": 3000000,
+      "terms": "hjhj done",
+      "status": "active"
+    },
+    {
+      "contractId": "C003",
+      "roomId": "P101",
+      "tenantId": "U001",
+      "contractDate": "2025-08-15",
+      "duration": 12,
+      "rentPrice": 3000000,
+      "terms": "hjhj",
+      "status": "active"
+    },
+    {
+      "contractId": "C004",
+      "roomId": "P102",
+      "tenantId": "U001",
+      "contractDate": "2025-08-15",
+      "duration": 12,
+      "rentPrice": 2500000,
+      "terms": "ác",
+      "status": "active"
+    },
+    {
+      "roomId": "P101",
+      "tenantId": "Vu Hoang Son",
+      "contractDate": "2025-08-01",
+      "duration": 12,
+      "rentPrice": 500000,
+      "terms": "dep trai",
+      "id": "C1754092825341",
+      "contractId": "C1754092825341"
     }
   ],
   "rooms": [
     {
-      "id": 1,
+      "id": "P101",
       "roomId": "P101",
       "area": 25,
       "price": 3000000,
-      "utilities": "Máy lạnh, Wifi, Máy giặt",
+      "utilities": [
+        "Máy lạnh",
+        "Wifi",
+        "Máy giặt"
+      ],
       "maxPeople": 3,
-      "image": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=compress&cs=tinysrgb&w=400&h=250&dpr=1",
+      "images": [
+        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=compress&cs=tinysrgb&w=400&h=250&dpr=1"
+      ],
       "description": "Phòng mới xây, sạch sẽ, có cửa sổ lớn thoáng mát.",
       "location": "Lầu 1, Số 10 Nguyễn Văn Bảo, Gò Vấp",
       "deposit": "1 tháng tiền phòng",
       "electricity": "3.500",
       "tenant": {
-        "name": "Nguyễn Văn A",
+        "userId": "U001",
+        "fullName": "Nguyễn Văn A",
         "phone": "0909123456",
         "avatar": "https://i.pravatar.cc/100?img=1"
       }
     },
     {
-      "id": 2,
+      "id": "P102",
       "roomId": "P102",
       "area": 20,
       "price": 2500000,
-      "utilities": "Wifi, Máy giặt chung",
+      "utilities": [
+        "Wifi",
+        "Máy giặt chung"
+      ],
       "maxPeople": 2,
-      "image": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=compress&cs=tinysrgb&w=400&h=250&dpr=1",
+      "images": [
+        "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=compress&cs=tinysrgb&w=400&h=250&dpr=1"
+      ],
       "description": "Phòng ở tầng 2, yên tĩnh, phù hợp sinh viên.",
       "location": "Lầu 2, Số 10 Nguyễn Văn Bảo, Gò Vấp",
       "deposit": "1 tháng tiền phòng",
@@ -121,13 +175,20 @@
       "tenant": null
     },
     {
-      "id": 3,
+      "id": "P103",
       "roomId": "P103",
       "area": 30,
       "price": 3500000,
-      "utilities": "Máy lạnh, Wifi, Máy giặt, Tủ lạnh",
+      "utilities": [
+        "Máy lạnh",
+        "Wifi",
+        "Máy giặt",
+        "Tủ lạnh"
+      ],
       "maxPeople": 4,
-      "image": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=compress&cs=tinysrgb&w=400&h=250&dpr=1",
+      "images": [
+        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=compress&cs=tinysrgb&w=400&h=250&dpr=1"
+      ],
       "description": "Phòng rộng rãi, đầy đủ tiện nghi.",
       "location": "Lầu 3, Số 10 Nguyễn Văn Bảo, Gò Vấp",
       "deposit": "1 tháng tiền phòng",
@@ -135,13 +196,18 @@
       "tenant": null
     },
     {
-      "id": 4,
+      "id": "P104",
       "roomId": "P104",
       "area": 22,
       "price": 2800000,
-      "utilities": "Máy lạnh, Wifi",
+      "utilities": [
+        "Máy lạnh",
+        "Wifi"
+      ],
       "maxPeople": 2,
-      "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=compress&cs=tinysrgb&w=400&h=250&dpr=1",
+      "images": [
+        "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=compress&cs=tinysrgb&w=400&h=250&dpr=1"
+      ],
       "description": "Phòng có ban công, view đẹp.",
       "location": "Lầu 4, Số 10 Nguyễn Văn Bảo, Gò Vấp",
       "deposit": "1 tháng tiền phòng",
@@ -151,16 +217,16 @@
   ],
   "tenants": [
     {
-      "id": 1,
-      "name": "Nguyễn Văn A",
+      "userId": "U001",
+      "fullName": "Nguyễn Văn A",
       "phone": "0909123456",
       "email": "nguyenvana@example.com",
       "avatar": "https://i.pravatar.cc/100?img=1",
       "roomCode": "P101",
-      "roomId": 1,
+      "roomId": "P101",
       "startDate": "2025-01-01",
       "endDate": "2026-07-01",
-      "contractId": 1,
+      "contractId": "C001",
       "monthlyRent": 3000000,
       "status": "active"
     }

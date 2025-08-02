@@ -12,27 +12,30 @@ import TenantDetail from "./tenant/TenantDetail";
 import { Home, CheckCircle, Users, DollarSign, Plus, Eye, UserCheck } from "lucide-react";
 
 interface Room {
-  id: number;
-  code: string;
+  roomId: string;
+  roomTitle: string;
   area: number;
   price: number;
-  utilities: string;
+  utilities: string[];
   maxPeople: number;
-  image: string;
+  images: string[];
   description?: string;
   location?: string;
   deposit?: string;
   electricity?: string;
   status: string;
+  roomType?: string;
   tenant?: {
-    name: string;
+    userId: string;
+    fullName: string;
     phone: string;
     avatar: string;
   };
 }
 
 interface RentalRequest {
-  id: number;
+  requestId: string; // Thêm dòng này
+  id: string;
   tenantName: string;
   phone: string;
   email: string;
@@ -44,16 +47,16 @@ interface RentalRequest {
 }
 
 interface Tenant {
-  id: number;
-  name: string;
+  userId: string;
+  fullName: string;
   phone: string;
   email: string;
   avatar: string;
   roomCode: string;
-  roomId: number;
+  roomId: string;
   startDate: string;
   endDate: string;
-  contractId?: number;
+  contractId?: string;
   monthlyRent: number;
 }
 
@@ -92,16 +95,74 @@ const Dashboard = () => {
       ]);
 
       setStatistics(statsRes.data);
-      setRooms(roomsRes.data.map((room: any) => ({
-        ...room,
-        status: room.tenant ? "Đã cho thuê" : "Còn trống"
-      })));
-      setRentalRequests(requestsRes.data.map((req: any) => ({
-        ...req,
-        submittedAt: new Date().toLocaleDateString('vi-VN') + " - " + new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-        avatar: "https://i.pravatar.cc/100?img=" + req.id
-      })));
-      setTenants(tenantsRes.data || []);
+      setRooms(
+        roomsRes.data.map((room: any) => ({
+          roomId: room.roomId,
+          roomTitle: room.roomTitle || room.roomId || "",
+          area: room.area,
+          price: room.price,
+          utilities: Array.isArray(room.utilities)
+            ? room.utilities
+            : room.utilities
+            ? room.utilities.split(",").map((u: string) => u.trim())
+            : [],
+          maxPeople: room.maxPeople,
+          images: Array.isArray(room.images)
+            ? room.images
+            : room.image
+            ? [room.image]
+            : [],
+          description: room.description,
+          location: room.location,
+          deposit: room.deposit,
+          electricity: room.electricity,
+          status: room.tenant ? "Đã cho thuê" : "Còn trống",
+          roomType: room.roomType,
+          tenant: room.tenant
+            ? {
+                userId: room.tenant.userId,
+                fullName: room.tenant.fullName,
+                phone: room.tenant.phone,
+                avatar: room.tenant.avatar,
+              }
+            : undefined,
+        }))
+      );
+      setRentalRequests(
+        requestsRes.data.map((req: any) => ({
+          requestId: req.requestId?.toString() || req.id?.toString() || "", // Thêm dòng này
+          id: req.id?.toString() || "",
+          tenantName: req.tenantName,
+          phone: req.phone,
+          email: req.email,
+          desiredRoomId: req.desiredRoomId,
+          status: req.status,
+          message: req.message,
+          submittedAt:
+            new Date().toLocaleDateString("vi-VN") +
+            " - " +
+            new Date().toLocaleTimeString("vi-VN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          avatar: "https://i.pravatar.cc/100?img=" + req.id,
+        }))
+      );
+      setTenants(
+        tenantsRes.data.map((tenant: any) => ({
+          userId: tenant.userId,
+          fullName: tenant.fullName,
+          phone: tenant.phone,
+          email: tenant.email,
+          avatar: tenant.avatar,
+          roomCode: tenant.roomCode,
+          roomId: tenant.roomId,
+          startDate: tenant.startDate,
+          endDate: tenant.endDate,
+          contractId: tenant.contractId,
+          monthlyRent: tenant.monthlyRent,
+        }))
+      );
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -113,13 +174,13 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
-  const handleDeleteRoom = async (id: number) => {
+  const handleDeleteRoom = async (roomId: string) => {
     const confirm = window.confirm("❗Bạn có chắc chắn muốn xóa phòng này?");
     if (!confirm) return;
-    
+
     try {
-      await hostService.deleteRoom(id);
-      setRooms(rooms.filter(room => room.id !== id));
+      await hostService.deleteRoom(roomId);
+      setRooms(rooms.filter((room) => room.roomId !== roomId));
     } catch (err) {
       alert("❌ Lỗi khi xóa phòng!");
       console.error(err);
@@ -145,12 +206,12 @@ const Dashboard = () => {
     }
   };
 
-  const handleRejectRequest = async (id: number) => {
+  const handleRejectRequest = async (id: string) => {
     const confirm = window.confirm("Bạn có chắc muốn từ chối?");
     if (!confirm) return;
 
     try {
-      await hostService.rejectRentalRequest(id.toString());
+      await hostService.rejectRentalRequest(id);
       setRentalRequests(rentalRequests.filter(req => req.id !== id));
       alert("Đã từ chối yêu cầu.");
     } catch (error) {
@@ -158,9 +219,10 @@ const Dashboard = () => {
     }
   };
 
-  // ✅ SỬA LẠI: Sử dụng contractId thay vì tenant.id
   const handleTerminateTenant = async (tenant: Tenant) => {
-    const confirm = window.confirm(`Bạn có chắc muốn chấm dứt hợp đồng với ${tenant.name}?`);
+    const confirm = window.confirm(
+      `Bạn có chắc muốn chấm dứt hợp đồng với ${tenant.fullName}?`
+    );
     if (!confirm) return;
 
     try {
@@ -173,7 +235,9 @@ const Dashboard = () => {
       alert("✅ Đã chấm dứt hợp đồng thành công!");
       fetchData(); // Refresh data
     } catch (error: any) {
-      alert(`❌ Có lỗi xảy ra: ${error.message || 'Không thể chấm dứt hợp đồng'}`);
+      alert(
+        `❌ Có lỗi xảy ra: ${error.message || "Không thể chấm dứt hợp đồng"}`
+      );
       console.error(error);
     }
   };
@@ -281,11 +345,11 @@ const Dashboard = () => {
               <div className="space-y-4">
                 {rooms.slice(0, 2).map((room) => (
                   <RoomCard
-                    key={room.id}
+                    key={room.roomId}
                     room={room}
                     onViewDetail={() => setSelectedRoom(room)}
-                    onEdit={() => navigate(`/host/update-room/${room.id}`)}
-                    onDelete={() => handleDeleteRoom(room.id)}
+                    onEdit={() => navigate(`/host/update-room/${room.roomId}`)}
+                    onDelete={() => handleDeleteRoom(room.roomId)}
                   />
                 ))}
               </div>
@@ -316,11 +380,11 @@ const Dashboard = () => {
               <div className="space-y-4">
                 {tenants.slice(0, 2).map((tenant) => (
                   <TenantCard
-                    key={tenant.id}
+                    key={tenant.userId}
                     tenant={tenant}
                     onViewDetail={() => setSelectedTenant(tenant)}
                     onTerminateContract={() => handleTerminateTenant(tenant)}
-                    onEditTenant={() => navigate(`/host/tenant-edit/${tenant.id}`)}
+                    onEditTenant={() => navigate(`/host/tenant-edit/${tenant.userId}`)}
                   />
                 ))}
               </div>
@@ -350,12 +414,12 @@ const Dashboard = () => {
             ) : (
               <div className="space-y-4">
                 {rentalRequests.slice(0, 2).map((request) => (
-                  <RentalRequestCard
-                    key={request.id}
-                    request={request}
-                    onApprove={() => handleApproveRequest(request)}
-                    onReject={() => handleRejectRequest(request.id)}
-                  />
+                <RentalRequestCard
+  key={request.id}
+  request={request}
+  onApprove={() => handleApproveRequest(request)}
+  onReject={() => handleRejectRequest(request.id)}
+/>
                 ))}
               </div>
             )}

@@ -8,13 +8,11 @@ const CreateContract = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [contract, setContract] = useState({
-    tenantName: location.state?.tenantName || "",
-    phone: location.state?.phone || "",
-    email: location.state?.email || "",
     roomId: location.state?.roomId || "",
-    startDate: "",
-    endDate: "",
-    deposit: "",
+    tenantId: location.state?.tenantId || "",
+    contractDate: "",
+    duration: 12,
+    rentPrice: "",
     terms: "",
   });
   const [loading, setLoading] = useState(false);
@@ -29,26 +27,29 @@ const CreateContract = () => {
     e.preventDefault();
     setLoading(true);
 
+    // Tạo id duy nhất cho hợp đồng (có thể dùng Date.now hoặc uuid)
+    const newId = `C${Date.now()}`;
+
     const dataToSubmit = {
       ...contract,
-      roomId: parseInt(contract.roomId),
-      deposit: parseInt(contract.deposit),
+      id: newId, // Thêm dòng này
+      contractId: newId, // Nếu muốn đồng bộ contractId với id
+      duration: Number(contract.duration),
+      rentPrice: Number(contract.rentPrice),
+      contractDate: contract.contractDate,
     };
 
     try {
       if (assignTenant && location.state?.requestId) {
-        // Sử dụng API mới để duyệt yêu cầu và gắn người thuê
         await hostService.approveRentalRequestWithAssignment(
           location.state.requestId.toString(),
           dataToSubmit
         );
         alert("✅ Tạo hợp đồng và gắn người thuê thành công!");
       } else {
-        // Chỉ tạo hợp đồng thông thường
         await hostService.createContract(dataToSubmit);
         alert("✅ Tạo hợp đồng thành công!");
       }
-      
       navigate("/host/contracts");
     } catch (error) {
       alert("❌ Tạo hợp đồng thất bại!");
@@ -69,45 +70,6 @@ const CreateContract = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                👤 Họ tên người thuê *
-              </label>
-              <input
-                name="tenantName"
-                value={contract.tenantName}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                📞 Số điện thoại *
-              </label>
-              <input
-                name="phone"
-                value={contract.phone}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                📧 Email
-              </label>
-              <input
-                name="email"
-                type="email"
-                value={contract.email}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
                 🏠 ID Phòng *
               </label>
               <input
@@ -115,20 +77,18 @@ const CreateContract = () => {
                 value={contract.roomId}
                 onChange={handleChange}
                 required
-                type="number"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                💰 Tiền đặt cọc (VNĐ) *
+                👤 ID Người thuê *
               </label>
               <input
-                name="deposit"
-                value={contract.deposit}
+                name="tenantId"
+                value={contract.tenantId}
                 onChange={handleChange}
-                type="number"
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
@@ -136,13 +96,13 @@ const CreateContract = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                📅 Ngày bắt đầu *
+                📅 Ngày ký hợp đồng *
               </label>
               <input
-                name="startDate"
-                value={contract.startDate}
-                onChange={handleChange}
+                name="contractDate"
                 type="date"
+                value={contract.contractDate}
+                onChange={handleChange}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
@@ -150,13 +110,28 @@ const CreateContract = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                📅 Ngày kết thúc *
+                🕒 Thời hạn hợp đồng (tháng) *
               </label>
               <input
-                name="endDate"
-                value={contract.endDate}
+                name="duration"
+                type="number"
+                value={contract.duration}
                 onChange={handleChange}
-                type="date"
+                required
+                min={1}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                💰 Giá thuê (VNĐ) *
+              </label>
+              <input
+                name="rentPrice"
+                type="number"
+                value={contract.rentPrice}
+                onChange={handleChange}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />

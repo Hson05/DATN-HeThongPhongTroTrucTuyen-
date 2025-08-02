@@ -32,7 +32,7 @@ const RoomStatus = () => {
 
   const handleStatusChange = async (roomId: number, newStatus: string) => {
     try {
-      await hostService.updateRoomStatus(roomId, newStatus);
+      await hostService.updateRoomStatus(roomId.toString(), newStatus);
       setRoomStatus((prev) =>
         prev.map((room) =>
           room.id === roomId ? { ...room, status: newStatus } : room

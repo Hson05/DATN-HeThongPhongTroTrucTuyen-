@@ -98,28 +98,46 @@ const ContractDetail = () => {
                 Thông tin người thuê
               </h3>
               <div className="space-y-2">
-                <p><span className="font-medium">Họ tên:</span> {contract.tenantName}</p>
-                <p><span className="font-medium">Số điện thoại:</span> {contract.phone}</p>
+                <p>
+                  <span className="font-medium">ID Người thuê:</span> {contract.tenantId}
+                </p>
+                {/* Nếu muốn hiển thị họ tên/sdt, cần fetch thêm từ bảng users */}
               </div>
             </div>
-
             <div className="space-y-4">
               <h3 className="font-semibold text-gray-900 border-b pb-2">
                 Thông tin phòng
               </h3>
               <div className="space-y-2">
-                <p><span className="font-medium">Mã phòng:</span> {contract.roomId}</p>
-                <p><span className="font-medium">Tiền cọc:</span> {contract.deposit?.toLocaleString()}₫</p>
+                <p>
+                  <span className="font-medium">Mã phòng:</span> {contract.roomId}
+                </p>
+                <p>
+                  <span className="font-medium">Giá thuê:</span> {contract.rentPrice?.toLocaleString()}₫
+                </p>
+                <p>
+                  <span className="font-medium">Thời hạn:</span> {contract.duration} tháng
+                </p>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <p><span className="font-medium">Ngày bắt đầu:</span> {contract.startDate}</p>
+              <p>
+                <span className="font-medium">Ngày ký hợp đồng:</span> {contract.contractDate}
+              </p>
             </div>
+            {/* Nếu muốn hiển thị ngày kết thúc, tính bằng contractDate + duration tháng */}
             <div>
-              <p><span className="font-medium">Ngày kết thúc:</span> {contract.endDate}</p>
+              <p>
+                <span className="font-medium">Ngày kết thúc:</span> {
+                  contract.contractDate
+                    ? new Date(new Date(contract.contractDate).setMonth(new Date(contract.contractDate).getMonth() + Number(contract.duration)))
+                        .toLocaleDateString('vi-VN')
+                    : ""
+                }
+              </p>
             </div>
           </div>
 

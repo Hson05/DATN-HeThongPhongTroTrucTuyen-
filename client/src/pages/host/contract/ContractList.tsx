@@ -6,13 +6,12 @@ import { useNavigate } from "react-router-dom";
 import { FileText, Search, Eye, Trash2 } from "lucide-react";
 
 interface Contract {
-  id: number;
-  tenantName: string;
-  phone: string;
+  contractId: string;
   roomId: string;
-  startDate: string;
-  endDate: string;
-  deposit: number;
+  tenantId: string;
+  contractDate: string;
+  duration: number;
+  rentPrice: number;
   terms: string;
 }
 
@@ -28,7 +27,7 @@ const ContractList = () => {
       setLoading(true);
       let res;
       if (filterRoomId) {
-        res = await hostService.getContractsByRoom(parseInt(filterRoomId));
+        res = await hostService.getContractsByRoom(filterRoomId);
       } else {
         res = await hostService.getContracts();
       }
@@ -45,17 +44,13 @@ const ContractList = () => {
     fetchContracts();
   }, [filterRoomId]);
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (contractId: string) => {
     const confirmDelete = window.confirm("Bạn có chắc muốn xóa hợp đồng này?");
     if (!confirmDelete) return;
 
     try {
-      // 1. Chấm dứt hợp đồng (cập nhật trạng thái phòng, tenant, contract)
-      await hostService.terminateContract(id);
-
-      // 2. Xóa hợp đồng khỏi db
-      await hostService.deleteContract(id.toString());
-
+      await hostService.terminateContract(contractId);
+      await hostService.deleteContract(contractId);
       alert("Đã xóa hợp đồng.");
       fetchContracts();
     } catch (error) {
@@ -92,7 +87,7 @@ const ContractList = () => {
             </label>
           </div>
           <input
-            type="number"
+            type="text"
             placeholder="Nhập mã phòng..."
             value={filterRoomId}
             onChange={(e) => setFilterRoomId(e.target.value)}
@@ -125,22 +120,22 @@ const ContractList = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ID
+                    Mã hợp đồng
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Người thuê
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    SĐT
+                    Người thuê (ID)
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Phòng
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Thời gian
+                    Ngày ký
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tiền cọc
+                    Thời hạn
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Giá thuê
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Hành động
@@ -149,41 +144,40 @@ const ContractList = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {contracts.map((contract) => (
-                  <tr key={contract.id} className="hover:bg-gray-50">
+                  <tr key={contract.contractId} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      #{contract.id}
+                      #{contract.contractId}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
-                        {contract.tenantName}
+                        {contract.tenantId}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {contract.phone}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {contract.roomId}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div>{contract.startDate}</div>
-                      <div className="text-xs text-gray-400">đến {contract.endDate}</div>
+                      {contract.contractDate}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {contract.duration} tháng
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm font-medium text-green-600">
-                        {contract.deposit.toLocaleString()}₫
+                        {contract.rentPrice != null ? contract.rentPrice.toLocaleString() : "0"}₫
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
                         <button
-                          onClick={() => navigate(`/host/contracts/${contract.id}`)}
+                          onClick={() => navigate(`/host/contracts/${contract.contractId}`)}
                           className="flex items-center space-x-1 text-blue-600 hover:text-blue-900"
                         >
                           <Eye className="w-4 h-4" />
                           <span>Xem</span>
                         </button>
                         <button
-                          onClick={() => handleDelete(contract.id)}
+                          onClick={() => handleDelete(contract.contractId)}
                           className="flex items-center space-x-1 text-red-600 hover:text-red-900"
                         >
                           <Trash2 className="w-4 h-4" />

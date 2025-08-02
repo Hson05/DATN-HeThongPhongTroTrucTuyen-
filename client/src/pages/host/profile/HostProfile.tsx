@@ -7,11 +7,14 @@ import UpdateProfile from "./HostProfileEdit"; // Form cập nhật thông tin
 
 const Profile = () => {
   const [profile, setProfile] = useState({
-    name: "",
+    fullName: "",
     phone: "",
     email: "",
     avatar: "",
     address: "",
+    // role: "", // nếu muốn hiển thị
+    // status: "", // nếu muốn hiển thị
+    // dob: "", // nếu muốn hiển thị
   });
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -50,7 +53,7 @@ const Profile = () => {
               className="w-24 h-24 rounded-full border-4 border-white object-cover shadow-lg"
             />
             <div className="text-white">
-              <h1 className="text-2xl font-bold mb-2">{profile.name}</h1>
+              <h1 className="text-2xl font-bold mb-2">{profile.fullName}</h1>
               <p className="text-blue-100">Chủ nhà</p>
             </div>
           </div>
@@ -77,7 +80,7 @@ const Profile = () => {
                 <User className="w-5 h-5 text-gray-500" />
                 <div>
                   <p className="text-sm text-gray-500">Họ tên</p>
-                  <p className="font-medium text-gray-900">{profile.name}</p>
+                  <p className="font-medium text-gray-900">{profile.fullName}</p>
                 </div>
               </div>
 

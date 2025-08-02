@@ -9,11 +9,11 @@ const TenantEdit = () => {
   const navigate = useNavigate();
 
   const [tenant, setTenant] = useState({
-    name: "",
+    fullName: "",
     phone: "",
     email: "",
     roomCode: "",
-    roomId: 0,
+    roomId: "",
     startDate: "",
     endDate: "",
     monthlyRent: 0,
@@ -24,7 +24,7 @@ const TenantEdit = () => {
   useEffect(() => {
     const fetchTenant = async () => {
       try {
-        const res = await hostService.getTenantById(Number(id));
+        const res = await hostService.getTenantById(id as string);
         setTenant(res.data);
       } catch (error) {
         alert("Không tìm thấy người thuê");
@@ -38,20 +38,20 @@ const TenantEdit = () => {
     if (id) {
       fetchTenant();
     }
-  }, [id]);
+  }, [id, navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setTenant((prev) => ({
       ...prev,
-      [name]: name === "monthlyRent" || name === "roomId" ? Number(value) : value,
+      [name]: name === "monthlyRent" ? Number(value) : value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await hostService.updateTenant(Number(id), tenant);
+      await hostService.updateTenant(id as string, tenant);
       alert("✅ Cập nhật thành công!");
       navigate("/host/tenant-list");
     } catch (error) {
@@ -68,11 +68,11 @@ const TenantEdit = () => {
     <div className="max-w-xl mx-auto p-6 bg-white rounded-lg shadow">
       <h2 className="text-2xl font-bold mb-4 text-gray-800">Chỉnh sửa người thuê</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <input type="text" name="name" value={tenant.name} onChange={handleChange} placeholder="Tên" className="w-full p-2 border rounded" required />
+        <input type="text" name="fullName" value={tenant.fullName} onChange={handleChange} placeholder="Họ tên" className="w-full p-2 border rounded" required />
         <input type="text" name="phone" value={tenant.phone} onChange={handleChange} placeholder="SĐT" className="w-full p-2 border rounded" required />
         <input type="email" name="email" value={tenant.email} onChange={handleChange} placeholder="Email" className="w-full p-2 border rounded" required />
         <input type="text" name="roomCode" value={tenant.roomCode} onChange={handleChange} placeholder="Mã phòng (P101...)" className="w-full p-2 border rounded" required />
-        <input type="number" name="roomId" value={tenant.roomId} onChange={handleChange} placeholder="ID phòng" className="w-full p-2 border rounded" required />
+        <input type="text" name="roomId" value={tenant.roomId} onChange={handleChange} placeholder="ID phòng" className="w-full p-2 border rounded" required />
         <input type="date" name="startDate" value={tenant.startDate} onChange={handleChange} className="w-full p-2 border rounded" required />
         <input type="date" name="endDate" value={tenant.endDate} onChange={handleChange} className="w-full p-2 border rounded" required />
         <input type="number" name="monthlyRent" value={tenant.monthlyRent} onChange={handleChange} placeholder="Giá thuê hàng tháng" className="w-full p-2 border rounded" required />

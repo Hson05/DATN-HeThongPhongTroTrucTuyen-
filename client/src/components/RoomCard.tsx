@@ -4,19 +4,25 @@ import { MapPin, Users, Zap } from "lucide-react";
 
 interface RoomCardProps {
   room: {
-    id: number;
-    code: string;
-    roomId?: string;
+    roomId: string;
+    roomTitle: string;
     area: number;
     price: number;
-    utilities: string;
+    utilities: string[];
     maxPeople: number;
-    image: string;
+    images: string[];
+    description?: string;
+    location?: string;
+    deposit?: string;
+    electricity?: string;
     status: string;
+    roomType?: string;
+    terms?: string;
+    hostId?: string;
     tenant?: {
-      name: string;
-      phone: string;
-      avatar: string;
+      fullName?: string;
+      phone?: string;
+      avatar?: string;
     };
   };
   onViewDetail: () => void;
@@ -38,77 +44,47 @@ const RoomCard = ({ room, onViewDetail, onEdit, onDelete }: RoomCardProps) => {
     }
   };
 
-  const displayCode = room.roomId || room.code || `P${room.id}`;
-  const displayUtilities = room.utilities || "Chưa có thông tin";
-  const displayImage = room.image || "https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&dpr=1";
-
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-      <div className="relative">
-        <img src={displayImage} alt={displayCode} className="w-full h-48 object-cover" />
-        <div className="absolute top-3 left-3">
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(room.status)}`}>
-            {room.status}
+    <div className="bg-white rounded-lg shadow p-4 flex flex-col">
+      <img
+        src={
+          room.images && room.images.length > 0
+            ? room.images[0]
+            : "https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&dpr=1"
+        }
+        alt={room.roomTitle}
+        className="w-full h-40 object-cover rounded-lg mb-4"
+      />
+      <h3 className="font-bold text-lg mb-2">{room.roomTitle}</h3>
+      <p className="text-gray-600 mb-1">{room.location}</p>
+      <p className="text-gray-500 text-sm mb-2">{room.description}</p>
+      <div className="flex flex-wrap gap-2 mb-2">
+        {room.utilities.map((u, idx) => (
+          <span
+            key={idx}
+            className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs"
+          >
+            {u}
           </span>
-        </div>
+        ))}
       </div>
-      
-      <div className="p-4">
-        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{displayCode}</h3>
-        
-        <div className="space-y-2 mb-4">
-          <div className="flex items-center text-sm text-gray-600">
-            <MapPin className="w-4 h-4 mr-1" />
-            <span>{room.area}m²</span>
-          </div>
-          <div className="flex items-center text-sm text-gray-600">
-            <Users className="w-4 h-4 mr-1" />
-            <span>Tối đa {room.maxPeople} người</span>
-          </div>
-          <div className="flex items-center text-sm text-gray-600">
-            <Zap className="w-4 h-4 mr-1" />
-            <span className="truncate">{displayUtilities}</span>
-          </div>
-        </div>
-
-        <div className="mb-4">
-          <p className="text-lg font-bold text-blue-600">
-            {room.price?.toLocaleString() || 0}đ/tháng
-          </p>
-        </div>
-
-        {room.tenant && (
-          <div className="flex items-center space-x-2 mb-4 p-2 bg-gray-50 rounded-lg">
-            <img
-              src={room.tenant.avatar}
-              alt={room.tenant.name}
-              className="w-8 h-8 rounded-full object-cover"
-            />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
-                {room.tenant.name}
-              </p>
-              <p className="text-xs text-gray-500">{room.tenant.phone}</p>
-            </div>
-          </div>
-        )}
-
-        <div className="flex space-x-2">
+      <div className="flex justify-between items-center mt-auto">
+        <span className="font-semibold text-green-600">
+          {room.price.toLocaleString()}₫/tháng
+        </span>
+        <div className="flex gap-2">
           <button
             onClick={onViewDetail}
-            className="flex-1 bg-blue-50 text-blue-600 py-2 px-3 rounded-lg text-sm font-medium hover:bg-blue-100 transition"
+            className="text-blue-600 hover:underline"
           >
             Chi tiết
           </button>
-          <button
-            onClick={onEdit}
-            className="flex-1 bg-yellow-50 text-yellow-600 py-2 px-3 rounded-lg text-sm font-medium hover:bg-yellow-100 transition"
-          >
+          <button onClick={onEdit} className="text-yellow-600 hover:underline">
             Sửa
           </button>
           <button
             onClick={onDelete}
-            className="flex-1 bg-red-50 text-red-600 py-2 px-3 rounded-lg text-sm font-medium hover:bg-red-100 transition"
+            className="text-red-600 hover:underline"
           >
             Xóa
           </button>

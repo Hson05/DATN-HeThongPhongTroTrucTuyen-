@@ -17,32 +17,30 @@ const TenantDetail = ({ tenant, onClose, onUpdated }: Props) => {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
-  
 
-const handleExtendContract = async (months: number) => {
-  if (!tenant.endDate) {
-    alert("❌ Không tìm thấy ngày kết thúc hợp đồng.");
-    return;
-  }
+  const handleExtendContract = async (months: number) => {
+    if (!tenant.endDate) {
+      alert("❌ Không tìm thấy ngày kết thúc hợp đồng.");
+      return;
+    }
 
-  try {
-    const currentEndDate = new Date(tenant.endDate);
-    const newEndDate = new Date(currentEndDate.setMonth(currentEndDate.getMonth() + months));
-    const newEndDateStr = newEndDate.toISOString().split("T")[0];
+    try {
+      const currentEndDate = new Date(tenant.endDate);
+      const newEndDate = new Date(currentEndDate.setMonth(currentEndDate.getMonth() + months));
+      const newEndDateStr = newEndDate.toISOString().split("T")[0];
 
-    await hostService.updateTenant(tenant.id, {
-      ...tenant,
-      endDate: newEndDateStr,
-    });
-    alert(`✅ Gia hạn thêm ${months} tháng thành công!\nNgày kết thúc mới: ${newEndDateStr}`);
-    if (onUpdated) onUpdated(); // Gọi reload danh sách
-    onClose();
-  } catch (error) {
-    console.error("❌ Lỗi khi gọi API gia hạn:", error);
-    alert("❌ Gia hạn hợp đồng thất bại.");
-  }
-};
-
+      await hostService.updateTenant(tenant.userId, {
+        ...tenant,
+        endDate: newEndDateStr,
+      });
+      alert(`✅ Gia hạn thêm ${months} tháng thành công!\nNgày kết thúc mới: ${newEndDateStr}`);
+      if (onUpdated) onUpdated();
+      onClose();
+    } catch (error) {
+      console.error("❌ Lỗi khi gọi API gia hạn:", error);
+      alert("❌ Gia hạn hợp đồng thất bại.");
+    }
+  };
 
   const remainingDays = getRemainingDays();
   const isExpired = remainingDays <= 0;
@@ -67,10 +65,10 @@ const handleExtendContract = async (months: number) => {
               <div className="text-center mb-6">
                 <img 
                   src={tenant.avatar} 
-                  alt={tenant.name}
+                  alt={tenant.fullName}
                   className="w-32 h-32 rounded-full object-cover mx-auto mb-4 border-4 border-gray-200" 
                 />
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">{tenant.name}</h3>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">{tenant.fullName}</h3>
                 <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                   isExpired ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
                 }`}>
@@ -118,7 +116,7 @@ const handleExtendContract = async (months: number) => {
                     <div>
                       <p className="text-sm text-gray-600">Tiền thuê hàng tháng</p>
                       <p className="font-bold text-green-600 text-lg">
-                        {tenant.monthlyRent.toLocaleString()}₫
+                        {tenant.monthlyRent?.toLocaleString()}₫
                       </p>
                     </div>
                   </div>
@@ -134,7 +132,7 @@ const handleExtendContract = async (months: number) => {
                     <div>
                       <p className="text-sm text-gray-600">Ngày bắt đầu</p>
                       <p className="font-medium text-gray-900">
-                        {new Date(tenant.startDate).toLocaleDateString('vi-VN')}
+                        {tenant.startDate ? new Date(tenant.startDate).toLocaleDateString('vi-VN') : ""}
                       </p>
                     </div>
                   </div>
@@ -144,7 +142,7 @@ const handleExtendContract = async (months: number) => {
                     <div>
                       <p className="text-sm text-gray-600">Ngày kết thúc</p>
                       <p className="font-medium text-gray-900">
-                        {new Date(tenant.endDate).toLocaleDateString('vi-VN')}
+                        {tenant.endDate ? new Date(tenant.endDate).toLocaleDateString('vi-VN') : ""}
                       </p>
                     </div>
                   </div>

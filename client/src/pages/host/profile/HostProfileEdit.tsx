@@ -10,7 +10,7 @@ interface UpdateProfileProps {
 
 const UpdateProfile = ({ closeModal }: UpdateProfileProps) => {
   const [profile, setProfile] = useState({
-    name: "",
+    fullName: "",
     phone: "",
     email: "",
     avatar: "",
@@ -70,8 +70,8 @@ const UpdateProfile = ({ closeModal }: UpdateProfileProps) => {
           </label>
           <input
             type="text"
-            value={profile.name}
-            onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+            value={profile.fullName}
+            onChange={(e) => setProfile({ ...profile, fullName: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>

@@ -20,7 +20,7 @@ export const hostService = {
   
   // 2. Quản lý trạng thái phòng
   getRoomStatus: () => axios.get(`${API}/roomStatus`),
-  updateRoomStatus: (roomId: number, status: string) =>
+  updateRoomStatus: (roomId: string, status: string) =>
     axios.patch(`${API}/roomStatus/${roomId}`, { status }),        
 
   // 3. Duyệt yêu cầu thuê phòng
@@ -35,19 +35,17 @@ export const hostService = {
 
   // 5. Quản lý hợp đồng
   getContracts: () => axios.get(`${API}/contracts`),
-  getContractsByRoom: (roomId: number) => axios.get(`${API}/contracts?roomId=${roomId}`),
+  getContractsByRoom: (roomId: string) => axios.get(`${API}/contracts?roomId=${roomId}`),
   getContractById: (id: string) => axios.get(`${API}/contracts/${id}`),
-  deleteContract: (id: string | number) => axios.delete(`${API}/contracts/${id}`),
-
+  deleteContract: (id: string) => axios.delete(`${API}/contracts/${id}`),
 
 
   // 6. Quản lý phòng
   createRoom: (data: any) => axios.post(`${API}/rooms`, data),
   getRooms: () => axios.get(`${API}/rooms`),
-  getRoomById: (id: number) => axios.get(`${API}/rooms/${id}`),
-  updateRoom: (id: number, data: any) => axios.put(`${API}/rooms/${id}`, data),
-  deleteRoom: (id: number) => axios.delete(`${API}/rooms/${id}`),
-
+  getRoomById: (roomId: string) => axios.get(`${API}/rooms/${roomId}`),
+  updateRoom: (roomId: string, data: any) => axios.put(`${API}/rooms/${roomId}`, data),
+  deleteRoom: (id: string) => axios.delete(`${API}/rooms/${id}`),
   // 7. Thống kê
   getStatistics: () => {
     return Promise.all([
@@ -81,25 +79,24 @@ export const hostService = {
 
   // 8. Quản lý người thuê
   getTenants: () => axios.get(`${API}/tenants?status_ne=inactive`),
-  getTenantById: (id: number) => axios.get(`${API}/tenants/${id}`),
-  updateTenant: (id: string | number, data: any) => axios.put(`${API}/tenants/${id}`, data),
-  deleteTenant: (id: number) => axios.delete(`${API}/tenants/${id}`),
+  getTenantById: (tenantId: string) => axios.get(`${API}/tenants/${tenantId}`),
+  updateTenant: (tenantId: string, data: any) => axios.put(`${API}/tenants/${tenantId}`, data),
+  deleteTenant: (tenantId: string) => axios.delete(`${API}/tenants/${tenantId}`),
 
   // 9. Gắn người thuê vào phòng
   assignTenantToRoom: async (tenantData: {
     name: string;
     phone: string;
     email: string;
-    roomId: number;
+    roomId: string;
     roomCode: string;
     startDate: string;
     endDate: string;
     monthlyRent: number;
-    contractId?: number;
+    contractId?: string;
   }) => {
     try {
       const avatarUrl = `https://i.pravatar.cc/100?img=${Date.now() % 70 + 1}`;
-      
       // 1. Tạo người thuê mới
       const tenantRes = await axios.post(`${API}/tenants`, {
         ...tenantData,
@@ -129,7 +126,7 @@ export const hostService = {
   },
 
   // 10. Chấm dứt hợp đồng/Trả phòng
-  terminateContract: async (contractId: number) => {
+  terminateContract: async (contractId: string) => {
     try {
       // 1. Tìm hợp đồng để lấy thông tin
       const contractRes = await axios.get(`${API}/contracts/${contractId}`);
@@ -164,7 +161,7 @@ export const hostService = {
       });
 
       // 6. Đánh dấu người thuê là inactive
-      await axios.patch(`${API}/tenants/${tenant.id}`, {
+      await axios.patch(`${API}/tenants/${tenant.userId}`, {
         status: "inactive",
         terminatedDate: new Date().toISOString().split("T")[0],
       });
@@ -184,7 +181,7 @@ export const hostService = {
       
       // 2. Tạo hợp đồng
       const contractRes = await axios.post(`${API}/contracts`, contractData);
-      const contractId = contractRes.data.id;
+      const contractId = contractRes.data.contractId;
       
       // 3. Lấy thông tin phòng để có giá thuê
       const roomRes = await axios.get(`${API}/rooms/${contractData.roomId}`);

@@ -9,16 +9,16 @@ import Modal from "../../../components/Modal";
 import { Users, Search, Filter, UserX, AlertTriangle } from "lucide-react";
 
 interface Tenant {
-  id: number;
-  name: string;
+  userId: string;
+  fullName: string;
   phone: string;
   email: string;
   avatar: string;
   roomCode: string;
-  roomId: number;
+  roomId: string;
   startDate: string;
   endDate: string;
-  contractId?: number;
+  contractId?: string;
   monthlyRent: number;
 }
 
@@ -55,7 +55,7 @@ const TenantList = () => {
     // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(tenant =>
-        tenant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        tenant.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         tenant.phone.includes(searchTerm) ||
         tenant.roomCode.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -247,11 +247,11 @@ const TenantList = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {filteredTenants.map((tenant) => (
             <TenantCard
-              key={tenant.id}
+              key={tenant.userId}
               tenant={tenant}
               onViewDetail={() => setSelectedTenant(tenant)}
               onTerminateContract={() => setTerminatingTenant(tenant)}
-              onEditTenant={() => navigate(`/host/tenant-edit/${tenant.id}`)}
+              onEditTenant={() => navigate(`/host/tenant-edit/${tenant.userId}`)}
             />
           ))}
         </div>
@@ -281,7 +281,7 @@ const TenantList = () => {
               </h3>
               <p className="text-gray-600">
                 Bạn có chắc chắn muốn chấm dứt hợp đồng thuê phòng của{" "}
-                <span className="font-medium">{terminatingTenant.name}</span>?
+                <span className="font-medium">{terminatingTenant.fullName}</span>?
               </p>
               {terminatingTenant.contractId && (
                 <p className="text-sm text-gray-500 mt-2">

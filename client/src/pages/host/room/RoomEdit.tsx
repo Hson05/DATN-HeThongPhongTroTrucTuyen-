@@ -9,15 +9,20 @@ export default function UpdateRoom() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     roomId: "",
+    roomTitle: "",
     area: 0,
     price: 0,
-    utilities: "",
+    utilities: [],
     maxPeople: 1,
-    image: "",
+    images: [""],
     description: "",
     location: "",
     deposit: "",
     electricity: "",
+    roomType: "single",
+    status: "available",
+    terms: "",
+    hostId: "",
   });
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -25,20 +30,25 @@ export default function UpdateRoom() {
   useEffect(() => {
     if (id) {
       setInitialLoading(true);
-      hostService.getRoomById(Number(id))
+      hostService.getRoomById(id)
         .then((res) => {
           const room = res.data;
           setFormData({
-            roomId: room.roomId || room.code || "",
+            roomId: room.roomId || "",
+            roomTitle: room.roomTitle || "",
             area: room.area || 0,
             price: room.price || 0,
-            utilities: room.utilities || "",
+            utilities: Array.isArray(room.utilities) ? room.utilities : (room.utilities ? room.utilities.split(",").map((u: string) => u.trim()) : []),
             maxPeople: room.maxPeople || 1,
-            image: room.image || "",
+            images: Array.isArray(room.images) ? room.images : (room.image ? [room.image] : [""]),
             description: room.description || "",
             location: room.location || "",
             deposit: room.deposit || "",
             electricity: room.electricity || "",
+            roomType: room.roomType || "single",
+            status: room.status || "available",
+            terms: room.terms || "",
+            hostId: room.hostId || "",
           });
         })
         .catch(() => {
@@ -50,12 +60,19 @@ export default function UpdateRoom() {
   }, [id, navigate]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ 
-      ...prev, 
-      [name]: name === "area" || name === "price" || name === "maxPeople" ? Number(value) : value 
+    setFormData((prev) => ({
+      ...prev,
+      [name]:
+        name === "area" || name === "price" || name === "maxPeople"
+          ? Number(value)
+          : name === "utilities"
+          ? value.split(",").map((u) => u.trim())
+          : name === "images"
+          ? [value]
+          : value,
     }));
   };
 
@@ -64,8 +81,16 @@ export default function UpdateRoom() {
     if (!id) return;
 
     setLoading(true);
+
+    // Chuẩn hóa dữ liệu trước khi gửi
+    const dataToSubmit = {
+      ...formData,
+      images: Array.isArray(formData.images) ? formData.images : [formData.images],
+      utilities: Array.isArray(formData.utilities) ? formData.utilities : [],
+    };
+
     try {
-      await hostService.updateRoom(Number(id), formData);
+      await hostService.updateRoom(id, dataToSubmit);
       alert("✅ Cập nhật phòng thành công!");
       navigate("/host/room-list");
     } catch (error) {
@@ -93,144 +118,175 @@ export default function UpdateRoom() {
         <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">
           🛠 Cập nhật thông tin phòng
         </h1>
-        
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Mã phòng *
               </label>
-              <input 
-                type="text" 
-                name="roomId" 
-                value={formData.roomId} 
+              <input
+                type="text"
+                name="roomId"
+                value={formData.roomId}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required 
+                required
               />
             </div>
-
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tiêu đề phòng *
+              </label>
+              <input
+                type="text"
+                name="roomTitle"
+                value={formData.roomTitle}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Giá phòng (VNĐ) *
               </label>
-              <input 
-                type="number" 
-                name="price" 
-                value={formData.price} 
+              <input
+                type="number"
+                name="price"
+                value={formData.price}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required 
+                required
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Diện tích (m²) *
               </label>
-              <input 
-                type="number" 
-                name="area" 
-                value={formData.area} 
+              <input
+                type="number"
+                name="area"
+                value={formData.area}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required 
+                required
               />
             </div>
-
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Loại phòng *
+              </label>
+              <select
+                name="roomType"
+                value={formData.roomType}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              >
+                <option value="single">Đơn</option>
+                <option value="shared">Chung</option>
+                <option value="apartment">Căn hộ</option>
+              </select>
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Số người tối đa
               </label>
-              <input 
-                type="number" 
-                name="maxPeople" 
-                value={formData.maxPeople} 
+              <input
+                type="number"
+                name="maxPeople"
+                value={formData.maxPeople}
                 onChange={handleChange}
+                min="1"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Tiền cọc
               </label>
-              <input 
-                type="text" 
-                name="deposit" 
-                value={formData.deposit} 
+              <input
+                type="text"
+                name="deposit"
+                value={formData.deposit}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Giá điện/nước
               </label>
-              <input 
-                type="text" 
-                name="electricity" 
-                value={formData.electricity} 
+              <input
+                type="text"
+                name="electricity"
+                value={formData.electricity}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tiện ích
+              Tiện ích (cách nhau bởi dấu phẩy)
             </label>
-            <input 
-              type="text" 
-              name="utilities" 
-              value={formData.utilities} 
+            <input
+              type="text"
+              name="utilities"
+              value={Array.isArray(formData.utilities) ? formData.utilities.join(", ") : ""}
               onChange={handleChange}
               placeholder="Máy lạnh, Wifi, Máy giặt..."
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Ảnh phòng (URL)
             </label>
-            <input 
-              type="text" 
-              name="image" 
-              value={formData.image} 
+            <input
+              type="text"
+              name="images"
+              value={formData.images[0]}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Địa chỉ phòng
             </label>
-            <input 
-              type="text" 
-              name="location" 
-              value={formData.location} 
+            <input
+              type="text"
+              name="location"
+              value={formData.location}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Mô tả chi tiết
             </label>
-            <textarea 
-              name="description" 
-              value={formData.description} 
+            <textarea
+              name="description"
+              value={formData.description}
               onChange={handleChange}
               rows={4}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Điều khoản thuê
+            </label>
+            <textarea
+              name="terms"
+              value={formData.terms}
+              onChange={handleChange}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
           <div className="flex justify-center space-x-4">
             <button
               type="button"

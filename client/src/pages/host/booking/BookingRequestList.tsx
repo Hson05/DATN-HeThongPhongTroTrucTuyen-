@@ -1,4 +1,4 @@
-// 📁 src/pages/host/RentalRequests.tsx
+// 📁 src/pages/host/booking/BookingRequestList.tsx
 // TRANG DUYỆT YÊU CẦU THUÊ PHÒNG
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -6,8 +6,9 @@ import { hostService } from "../../../services/hostService";
 import RentalRequestCard from "../../../components/RentalRequestCard";
 import { Users, Filter } from "lucide-react";
 
+// Sửa lại interface cho đúng chuẩn database
 interface RentalRequest {
-  id: number;
+  requestId: string;           // ID yêu cầu đặt phòng
   tenantName: string;
   phone: string;
   email: string;
@@ -18,7 +19,7 @@ interface RentalRequest {
   avatar: string;
 }
 
-const RentalRequests = () => {
+const BookingRequestList = () => {
   const [requests, setRequests] = useState<RentalRequest[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<RentalRequest[]>([]);
   const [statusFilter, setStatusFilter] = useState("all");
@@ -32,7 +33,7 @@ const RentalRequests = () => {
       const requestsWithDetails = res.data.map((req: any) => ({
         ...req,
         submittedAt: new Date().toLocaleDateString('vi-VN') + " - " + new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-        avatar: "https://i.pravatar.cc/100?img=" + req.id,
+        avatar: "https://i.pravatar.cc/100?img=" + req.requestId,
         message: req.message || "Tôi muốn thuê phòng này, có thể xem phòng được không?"
       }));
       setRequests(requestsWithDetails);
@@ -69,7 +70,7 @@ const RentalRequests = () => {
           phone: req.phone,
           email: req.email,
           roomId: req.desiredRoomId,
-          requestId: req.id
+          requestId: req.requestId
         },
       });
     } catch (error) {
@@ -78,12 +79,12 @@ const RentalRequests = () => {
     }
   };
 
-  const handleReject = async (id: number) => {
+  const handleReject = async (requestId: string) => {
     const confirm = window.confirm("Bạn có chắc muốn từ chối?");
     if (!confirm) return;
 
     try {
-      await hostService.rejectRentalRequest(id.toString());
+      await hostService.rejectRentalRequest(requestId);
       alert("Đã từ chối yêu cầu.");
       fetchRequests();
     } catch (error) {
@@ -157,10 +158,10 @@ const RentalRequests = () => {
         <div className="space-y-4">
           {filteredRequests.map((request) => (
             <RentalRequestCard
-              key={request.id}
+              key={request.requestId}
               request={request}
               onApprove={() => handleApprove(request)}
-              onReject={() => handleReject(request.id)}
+              onReject={() => handleReject(request.requestId)}
             />
           ))}
         </div>
@@ -169,4 +170,4 @@ const RentalRequests = () => {
   );
 };
 
-export default RentalRequests;
+export default BookingRequestList;

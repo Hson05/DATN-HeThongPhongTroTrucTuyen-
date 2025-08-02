@@ -2,18 +2,18 @@
 // Thẻ hiển thị thông tin người thuê
 import { User, Phone, Home, Calendar, AlertCircle } from "lucide-react";
 
-interface TenantCardProps {
+export interface TenantCardProps {
   tenant: {
-    id: number;
-    name: string;
+    userId: string;
+    fullName: string;
     phone: string;
     email: string;
     avatar: string;
     roomCode: string;
-    roomId: number;
+    roomId: string;
     startDate: string;
     endDate: string;
-    contractId?: number;
+    contractId?: string;
     monthlyRent: number;
   };
   onViewDetail: () => void;
@@ -39,14 +39,14 @@ const TenantCard = ({ tenant, onViewDetail, onTerminateContract, onEditTenant }:
       <div className="flex items-start space-x-4">
         <img
           src={tenant.avatar}
-          alt={tenant.name}
+          alt={tenant.fullName}
           className="w-16 h-16 rounded-full object-cover flex-shrink-0"
         />
         
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between mb-3">
             <div>
-              <h3 className="font-semibold text-gray-900 text-lg">{tenant.name}</h3>
+              <h3 className="font-semibold text-gray-900 text-lg">{tenant.fullName}</h3>
               <div className="flex items-center text-gray-600 text-sm mt-1">
                 <Phone className="w-4 h-4 mr-1" />
                 <span>{tenant.phone}</span>
