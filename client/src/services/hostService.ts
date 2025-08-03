@@ -3,6 +3,28 @@ import axios from "axios";
 
 const API = "http://localhost:3000";
 
+// Invoice interface
+export interface Invoice {
+  id?: string;
+  roomId: string;
+  tenantName: string;
+  roomPrice: number;
+  electricityAmount: number;
+  electricityRate: number;
+  electricityTotal: number;
+  waterAmount: number;
+  waterRate: number;
+  waterTotal: number;
+  otherFees: number;
+  otherFeesDescription: string;
+  totalAmount: number;
+  month: number;
+  year: number;
+  dueDate: string;
+  createdDate: string;
+  status: 'unpaid' | 'paid' | 'overdue';
+}
+
 // Thêm interceptor để xử lý lỗi
 axios.interceptors.response.use(
   (response) => response,
@@ -428,4 +450,81 @@ export const hostService = {
   
   // 14. Lấy danh sách người thuê cũ (đã trả phòng)
   getFormerTenants: () => axios.get(`${API}/tenants?status=inactive`),
+
+  // 15. Quản lý hóa đơn
+  getAllInvoices: async (): Promise<Invoice[]> => {
+    try {
+      const response = await fetch(`${API}/invoices`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch invoices');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching invoices:', error);
+      return [];
+    }
+  },
+
+  createInvoice: async (invoiceData: Omit<Invoice, 'id'>): Promise<Invoice> => {
+    try {
+      const newInvoice = {
+        ...invoiceData,
+        id: Date.now().toString(),
+        status: 'unpaid' as const,
+      };
+
+      const response = await fetch(`${API}/invoices`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newInvoice),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create invoice');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating invoice:', error);
+      throw error;
+    }
+  },
+
+  updateInvoiceStatus: async (id: string, status: Invoice['status']): Promise<Invoice> => {
+    try {
+      const response = await fetch(`${API}/invoices/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update invoice status');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating invoice status:', error);
+      throw error;
+    }
+  },
+
+  deleteInvoice: async (id: string): Promise<void> => {
+    try {
+      const response = await fetch(`${API}/invoices/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete invoice');
+      }
+    } catch (error) {
+      console.error('Error deleting invoice:', error);
+      throw error;
+    }
+  },
 };

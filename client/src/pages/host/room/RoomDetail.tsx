@@ -1,7 +1,8 @@
 // Chi tiết phòng
 // ../client/src/pages/host/room/RoomDetail.tsx
-import { X, MapPin, Users, Zap, DollarSign } from "lucide-react";
-
+import { X, MapPin, Users, Zap, DollarSign, FileText } from "lucide-react";
+import { useState } from "react";
+import InvoiceForm from "../../../components/InvoiceForm"; 
 interface Tenant {
   fullName?: string;
   phone?: string;
@@ -29,6 +30,8 @@ interface Props {
 }
 
 export default function RoomDetail({ room, onClose }: Props) {
+  const [showInvoiceForm, setShowInvoiceForm] = useState(false);
+
   const displayImage =
     Array.isArray(room.images) && room.images.length > 0
       ? room.images[0]
@@ -46,6 +49,12 @@ export default function RoomDetail({ room, onClose }: Props) {
       default:
         return "bg-gray-100 text-gray-800";
     }
+  };
+
+  const handleCreateInvoice = (invoiceData: any) => {
+    console.log('Invoice created:', invoiceData);
+    // Ở đây bạn có thể gọi API để lưu hóa đơn
+    // await invoiceService.createInvoice(invoiceData);
   };
 
   return (
@@ -153,8 +162,30 @@ export default function RoomDetail({ room, onClose }: Props) {
               )}
             </div>
           </div>
+
+          {/* Nút tạo hóa đơn - chỉ hiện khi phòng đã có người thuê */}
+          {room.tenant && room.status === "Đã cho thuê" && (
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <button
+                onClick={() => setShowInvoiceForm(true)}
+                className="flex items-center space-x-2 w-full bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition font-medium"
+              >
+                <FileText size={20} />
+                <span>Tạo hóa đơn thanh toán</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Invoice Form Modal */}
+      {showInvoiceForm && (
+        <InvoiceForm
+          room={room}
+          onClose={() => setShowInvoiceForm(false)}
+          onSave={handleCreateInvoice}
+        />
+      )}
     </div>
   );
 }

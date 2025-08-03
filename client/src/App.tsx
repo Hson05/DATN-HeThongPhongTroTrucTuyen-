@@ -13,6 +13,7 @@ import RoomList from "./pages/host/room/RoomList";
 import TenantList from "./pages/host/tenant/TenantList";
 import HomepageLayout from "./components/HomePageLayout";
 import TenantEdit from "./pages/host/tenant/TenantEdit";
+import InvoiceList from "./pages/host/Invoice/InvoiceList";
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
           <Route path="/host/create-contract" element={<CreateContract />} />
           <Route path="/host/contracts" element={<ContractList />} />
           <Route path="/host/contracts/:id" element={<ContractDetail />} />
+          <Route path="/host/invoices"element={<InvoiceList />} />
           <Route path="/host/logout" element={<div className="p-6"><h1>Đăng xuất (chưa hoàn thành)</h1></div>} />
         </Route>
       </Routes>
